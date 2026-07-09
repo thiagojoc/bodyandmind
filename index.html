@@ -553,26 +553,41 @@ var WORKOUTS_ISE={};
   for(var _d=0;_d<=6;_d++)WORKOUTS_ISE[_d]=_diaIse;
 })();
 var MEAL_SLOTS_ISE=[
-  {id:"cafe_ise",time:"08:00",icon:"🥤",name:"Café da manhã",options:[
-    {id:"ci_a",label:"A",desc:"Suco verde: mamão, laranja, couve, morango, água",cal:150,p:3,c:34,g:1,items:[{n:"Mamão",q:"100g"},{n:"Laranja",q:"1 unidade"},{n:"Couve",q:"2 folhas"},{n:"Morango",q:"5 unidades"},{n:"Água",q:"a gosto"}]},
-    {id:"ci_b",label:"B",desc:"Suco verde, trocando a couve por espinafre",cal:145,p:3,c:33,g:1,items:[{n:"Mamão",q:"100g"},{n:"Laranja",q:"1 unidade"},{n:"Espinafre",q:"2 folhas"},{n:"Morango",q:"5 unidades"},{n:"Água",q:"a gosto"}]},
-    {id:"ci_c",label:"C",desc:"Suco verde + salada de frutas: morango, maçã, pera",cal:230,p:4,c:52,g:1,items:[{n:"Suco verde (receita A)",q:"1 copo"},{n:"Morango",q:"4 unidades"},{n:"Maçã",q:"1/2 unidade"},{n:"Pera",q:"1/2 unidade"}]},
-    {id:"ci_d",label:"D",desc:"Suco verde, trocando a laranja por melão",cal:130,p:3,c:29,g:1,items:[{n:"Mamão",q:"100g"},{n:"Melão",q:"100g"},{n:"Couve",q:"2 folhas"},{n:"Morango",q:"5 unidades"},{n:"Água",q:"a gosto"}]},
+  {id:"cafe_ise",time:"08:00",icon:"🍳",name:"Café da manhã",options:[
+    {id:"ci_a",label:"A",desc:"Ovos mexidos + queijo",cal:220,p:18,c:3,g:16,items:[{n:"Ovos mexidos",q:"2 unidades"},{n:"Queijo",q:"20g"}]},
+    {id:"ci_b",label:"B",desc:"Crepioca de claras com queijo (sem goma de tapioca)",cal:200,p:17,c:3,g:14,items:[{n:"Claras de ovo",q:"3 unidades"},{n:"Queijo tipo cottage ou minas",q:"30g"}]},
+    {id:"ci_c",label:"C",desc:"Ovos cozidos + queijo + fruta de baixo índice glicêmico",cal:210,p:16,c:12,g:13,items:[{n:"Ovos cozidos",q:"2 unidades"},{n:"Queijo",q:"20g"},{n:"Morango ou maçã",q:"100g"}]},
+    {id:"ci_d",label:"D",desc:"Frango desfiado + ovos mexidos",cal:260,p:30,c:2,g:14,items:[{n:"Frango desfiado",q:"80g"},{n:"Ovos mexidos",q:"2 unidades"}]},
+    {id:"ci_e",label:"E",desc:"Omelete de queijo com espinafre",cal:230,p:18,c:4,g:16,items:[{n:"Ovos",q:"2 unidades"},{n:"Queijo",q:"20g"},{n:"Espinafre",q:"2 folhas"}]},
+    {id:"ci_f",label:"F",desc:"Crepioca de ovo inteiro + fruta de baixo índice glicêmico",cal:215,p:17,c:14,g:12,items:[{n:"Ovo inteiro",q:"2 unidades"},{n:"Queijo",q:"20g"},{n:"Morango ou pera",q:"100g"}]},
+    {id:"ci_g",label:"G",desc:"Ovos poché + queijo + salada de frutas",cal:225,p:17,c:10,g:14,items:[{n:"Ovos poché",q:"2 unidades"},{n:"Queijo",q:"20g"},{n:"Morango, maçã e pera",q:"100g"}]},
   ]},
   {id:"almoco_ise",time:"12:00",icon:"🐟",name:"Almoço",options:[
-    {id:"ai_a",label:"A",desc:"Tilápia grelhada + abobrinha refogada + salada verde",cal:320,p:38,c:10,g:14,items:[{n:"Tilápia grelhada",q:"180g"},{n:"Abobrinha refogada",q:"150g"},{n:"Salada verde",q:"à vontade"},{n:"Azeite",q:"1 col sopa"}]},
-    {id:"ai_b",label:"B",desc:"Frango grelhado + brócolis no vapor + salada colorida",cal:340,p:42,c:9,g:14,items:[{n:"Frango grelhado",q:"200g"},{n:"Brócolis no vapor",q:"150g"},{n:"Salada colorida",q:"à vontade"},{n:"Azeite",q:"1 col sopa"}]},
-    {id:"ai_c",label:"C",desc:"Salmão grelhado + couve-flor gratinada (sem farinha) + salada verde",cal:400,p:36,c:8,g:24,items:[{n:"Salmão grelhado",q:"180g"},{n:"Couve-flor gratinada com queijo",q:"150g"},{n:"Salada verde",q:"à vontade"},{n:"Azeite",q:"1 col sopa"}]},
+    {id:"ai_a",label:"A",desc:"Tilápia grelhada, abobrinha refogada, salada verde",cal:320,p:38,c:10,g:14,items:[{n:"Tilápia grelhada",q:"180g"},{n:"Abobrinha refogada",q:"150g"},{n:"Salada verde",q:"à vontade"},{n:"Azeite",q:"1 col sopa"}]},
+    {id:"ai_b",label:"B",desc:"Frango grelhado, brócolis no vapor, salada colorida",cal:340,p:42,c:9,g:14,items:[{n:"Frango grelhado",q:"200g"},{n:"Brócolis no vapor",q:"150g"},{n:"Salada colorida",q:"à vontade"},{n:"Azeite",q:"1 col sopa"}]},
+    {id:"ai_c",label:"C",desc:"Salmão grelhado, couve-flor gratinada com queijo, salada verde",cal:400,p:36,c:8,g:24,items:[{n:"Salmão grelhado",q:"180g"},{n:"Couve-flor gratinada com queijo",q:"150g"},{n:"Salada verde",q:"à vontade"},{n:"Azeite",q:"1 col sopa"}]},
+    {id:"ai_d",label:"D",desc:"Frango grelhado, legumes salteados (cenoura e vagem), salada verde",cal:330,p:40,c:11,g:13,items:[{n:"Frango grelhado",q:"200g"},{n:"Cenoura e vagem salteadas",q:"150g"},{n:"Salada verde",q:"à vontade"},{n:"Azeite",q:"1 col sopa"}]},
+    {id:"ai_e",label:"E",desc:"Tilápia assada, espinafre refogado, salada colorida",cal:310,p:36,c:9,g:13,items:[{n:"Tilápia assada",q:"180g"},{n:"Espinafre refogado",q:"150g"},{n:"Salada colorida",q:"à vontade"},{n:"Azeite",q:"1 col sopa"}]},
+    {id:"ai_f",label:"F",desc:"Frango ao curry com legumes no vapor, salada verde",cal:350,p:42,c:10,g:15,items:[{n:"Frango ao curry",q:"200g"},{n:"Legumes no vapor",q:"150g"},{n:"Salada verde",q:"à vontade"}]},
+    {id:"ai_g",label:"G",desc:"Salmão grelhado, aspargos, salada colorida",cal:370,p:34,c:6,g:22,items:[{n:"Salmão grelhado",q:"170g"},{n:"Aspargos",q:"120g"},{n:"Salada colorida",q:"à vontade"},{n:"Azeite",q:"1 col sopa"}]},
   ]},
   {id:"lanche_ise",time:"16:00",icon:"🧀",name:"Lanche da tarde",options:[
-    {id:"li_a",label:"A",desc:"Crepioca de claras com queijo (sem goma de tapioca)",cal:180,p:16,c:2,g:12,items:[{n:"Ovos ou claras",q:"2 unidades"},{n:"Queijo tipo cottage ou minas",q:"30g"}]},
-    {id:"li_b",label:"B",desc:"Ovos mexidos + queijo + morango",cal:220,p:16,c:10,g:14,items:[{n:"Ovos mexidos",q:"2 unidades"},{n:"Queijo",q:"20g"},{n:"Morango",q:"100g"}]},
-    {id:"li_c",label:"C",desc:"Queijo + fruta de baixo índice glicêmico",cal:170,p:8,c:15,g:9,items:[{n:"Queijo",q:"30g"},{n:"Maçã ou pera",q:"100g"}]},
+    {id:"li_a",label:"A",desc:"Queijo + fruta de baixo índice glicêmico",cal:150,p:7,c:14,g:8,items:[{n:"Queijo",q:"30g"},{n:"Maçã ou pera",q:"100g"}]},
+    {id:"li_b",label:"B",desc:"Crepioca de claras com queijo (sem goma de tapioca)",cal:180,p:16,c:2,g:12,items:[{n:"Claras de ovo",q:"3 unidades"},{n:"Queijo",q:"30g"}]},
+    {id:"li_c",label:"C",desc:"Ovos cozidos + queijo",cal:160,p:14,c:2,g:11,items:[{n:"Ovos cozidos",q:"2 unidades"},{n:"Queijo",q:"20g"}]},
+    {id:"li_d",label:"D",desc:"Frango desfiado com queijo, enrolado em folha de alface",cal:190,p:20,c:3,g:10,items:[{n:"Frango desfiado",q:"80g"},{n:"Queijo",q:"20g"},{n:"Folhas de alface",q:"3 unidades"}]},
+    {id:"li_e",label:"E",desc:"Queijo + morango",cal:140,p:7,c:10,g:8,items:[{n:"Queijo",q:"30g"},{n:"Morango",q:"100g"}]},
+    {id:"li_f",label:"F",desc:"Ovos mexidos + espinafre",cal:170,p:15,c:3,g:11,items:[{n:"Ovos mexidos",q:"2 unidades"},{n:"Espinafre refogado",q:"50g"}]},
+    {id:"li_g",label:"G",desc:"Crepioca de ovo inteiro + fruta de baixo índice glicêmico",cal:190,p:16,c:10,g:10,items:[{n:"Ovo inteiro",q:"2 unidades"},{n:"Queijo",q:"20g"},{n:"Morango ou pera",q:"80g"}]},
   ]},
   {id:"jantar_ise",time:"19:30",icon:"🌙",name:"Jantar",options:[
-    {id:"ji_a",label:"A",desc:"Frango grelhado + legumes no vapor + salada",cal:300,p:38,c:11,g:10,items:[{n:"Frango grelhado",q:"180g"},{n:"Abobrinha e cenoura no vapor",q:"150g"},{n:"Salada",q:"à vontade"}]},
-    {id:"ji_b",label:"B",desc:"Tilápia assada + purê de abóbora + salada verde",cal:290,p:36,c:14,g:8,items:[{n:"Tilápia assada",q:"180g"},{n:"Purê de abóbora",q:"120g"},{n:"Salada verde",q:"à vontade"}]},
-    {id:"ji_c",label:"C",desc:"Salmão grelhado + aspargos + salada colorida",cal:370,p:34,c:6,g:22,items:[{n:"Salmão grelhado",q:"170g"},{n:"Aspargos",q:"120g"},{n:"Salada colorida",q:"à vontade"},{n:"Azeite",q:"1 col sopa"}]},
+    {id:"ji_a",label:"A",desc:"Frango grelhado, legumes no vapor, salada",cal:300,p:38,c:11,g:10,items:[{n:"Frango grelhado",q:"180g"},{n:"Abobrinha e cenoura no vapor",q:"150g"},{n:"Salada",q:"à vontade"}]},
+    {id:"ji_b",label:"B",desc:"Tilápia assada, purê de abóbora, salada verde",cal:290,p:36,c:14,g:8,items:[{n:"Tilápia assada",q:"180g"},{n:"Purê de abóbora",q:"120g"},{n:"Salada verde",q:"à vontade"}]},
+    {id:"ji_c",label:"C",desc:"Salmão grelhado, aspargos, salada colorida",cal:370,p:34,c:6,g:22,items:[{n:"Salmão grelhado",q:"170g"},{n:"Aspargos",q:"120g"},{n:"Salada colorida",q:"à vontade"},{n:"Azeite",q:"1 col sopa"}]},
+    {id:"ji_d",label:"D",desc:"Frango assado com ervas, brócolis, salada verde",cal:310,p:39,c:8,g:11,items:[{n:"Frango assado com ervas",q:"180g"},{n:"Brócolis",q:"150g"},{n:"Salada verde",q:"à vontade"}]},
+    {id:"ji_e",label:"E",desc:"Tilápia grelhada, abobrinha e cenoura no vapor, salada",cal:295,p:37,c:10,g:9,items:[{n:"Tilápia grelhada",q:"180g"},{n:"Abobrinha e cenoura no vapor",q:"150g"},{n:"Salada",q:"à vontade"}]},
+    {id:"ji_f",label:"F",desc:"Frango grelhado, couve refogada, salada colorida",cal:305,p:38,c:9,g:10,items:[{n:"Frango grelhado",q:"180g"},{n:"Couve refogada",q:"120g"},{n:"Salada colorida",q:"à vontade"}]},
+    {id:"ji_g",label:"G",desc:"Salmão grelhado, espinafre refogado, salada verde",cal:365,p:33,c:7,g:21,items:[{n:"Salmão grelhado",q:"170g"},{n:"Espinafre refogado",q:"120g"},{n:"Salada verde",q:"à vontade"},{n:"Azeite",q:"1 col sopa"}]},
   ]},
 ];
 var WORKOUTS=WORKOUTS_THIAGO,MEAL_SLOTS=MEAL_SLOTS_THIAGO;
@@ -1203,7 +1218,7 @@ function renderHoje(){
   var water=getTotalWater(),waterPct=Math.min(100,Math.round(water/WATER_GOAL*100));
   var waterLog=getWaterLog();
   var readPct=readingGoal>0?Math.min(100,Math.round(readingMinutes/readingGoal*100)):0;
-  var checkItems=PROFILE==="ise"?[{id:"sono_ok",label:"😴 Dormi bem esta noite"}]:[{id:"creatina",label:"💊 Tomei 5g de creatina"},{id:"sono_ok",label:"😴 Dormi bem esta noite"}];
+  var checkItems=PROFILE==="ise"?[{id:"suco_verde",label:"🥤 Tomei o suco verde"},{id:"sono_ok",label:"😴 Dormi bem esta noite"}]:[{id:"creatina",label:"💊 Tomei 5g de creatina"},{id:"sono_ok",label:"😴 Dormi bem esta noite"}];
   if(w)checkItems.unshift({id:"treino_ok",label:"💪 Fiz o treino ("+w.name+")"});
   if(isRunDay())checkItems.push({id:"run",label:"🏃 Fiz a corrida de hoje"});
   var sleepH=0;if(sleepStart&&sleepEnd){var sp=sleepStart.split(":"),ep=sleepEnd.split(":");var sh=parseInt(sp[0])*60+parseInt(sp[1]),eh=parseInt(ep[0])*60+parseInt(ep[1]);if(eh<sh)eh+=1440;sleepH=(eh-sh)/60;}
@@ -1526,6 +1541,7 @@ function renderNutricao(){
   var html='<div style="display:flex;flex-direction:column;gap:10px">';
   var _dietChips=PROFILE==="ise"?(chip("Sem glúten","chip-pk")+chip("Baixo carboidrato","chip-pk")+chip("Sem carne vermelha/frituras/processados","chip-o")):(chip("3.100 kcal","chip-o")+chip("160g proteína","chip-b")+chip("330g carbo","chip-o")+chip("75g gordura","chip-y"));
   html+='<div class="card fu card-p" style="border-color:var(--gb)"><div style="font-family:var(--ff);font-size:20px;font-weight:800;color:var(--green);margin-bottom:10px">🍽️ Plano com variações</div><div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">'+_dietChips+'</div>'+pbar(pct,"linear-gradient(90deg,var(--green),var(--blue))")+'<div style="font-size:11px;color:var(--muted);margin-top:6px">'+doneMeals+' de '+MEAL_SLOTS.length+' refeições · Toque para escolher a opção do dia</div></div>';
+  if(PROFILE==="ise")html+='<div class="card card-p" style="border-color:#f472b640"><div style="font-family:var(--ff);font-size:18px;font-weight:800;margin-bottom:10px;color:#f472b6">🥤 Suco verde diário</div><div style="display:flex;align-items:flex-start;gap:11px">'+chkBox("suco_verde")+'<div><div style="font-size:14px;font-weight:600;color:var(--text)">Mamão, laranja, couve, morango, água</div><div style="font-size:12px;color:var(--muted);margin-top:2px">Só marque quando tomar — é um hábito à parte, não uma opção do café da manhã</div></div></div></div>';
   MEAL_SLOTS.forEach(function(slot){html+=renderMealSlot(slot);});
   // Custom foods for today
   var customs = getCustomFoods();
