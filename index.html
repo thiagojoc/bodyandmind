@@ -46,6 +46,10 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
 .login-divider{width:32px;height:1px;background:#00e67650;margin:18px auto 0}
 .login-btn{width:100%;padding:17px;background:var(--green);border-radius:14px;font-size:16px;font-weight:800;color:var(--bg);letter-spacing:.5px}
 .login-credit{font-size:12px;color:#ffffff38;letter-spacing:1px;font-weight:400}
+.profile-avatar-btn{background:none;border:none;cursor:pointer;padding:4px;border-radius:16px;transition:transform .15s ease}
+.profile-avatar-btn:active{transform:scale(.95)}
+.profile-avatar-ring{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid #ffffff20;background:#ffffff08;transition:all .18s ease}
+.profile-avatar-btn.sel .profile-avatar-ring{border-color:var(--ring);background:var(--ring-dim);box-shadow:0 0 0 5px var(--ring-halo)}
 /* LAYOUT */
 #main-app{display:none;padding-top:0}
 #main-app.visible{display:block}
@@ -200,7 +204,27 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
     <div class="login-divider"></div>
   </div>
   <div class="fu2" style="width:100%;display:flex;flex-direction:column;align-items:center;gap:20px">
-    <button class="login-btn" onclick="enterApp()">Entrar no Flow</button>
+    <div style="display:flex;gap:22px">
+      <button class="profile-avatar-btn" id="pf-thiago" style="--ring:#00e676;--ring-dim:#00e67618;--ring-halo:#00e67622" onclick="pickProfile('thiago')">
+        <div class="profile-avatar-ring">
+          <svg width="30" height="30" viewBox="0 0 40 40" fill="none">
+            <circle cx="20" cy="11" r="6" stroke="#00e676" stroke-width="1.8"/>
+            <path d="M8 34c0-8 5-13.5 12-13.5S32 26 32 34" stroke="#00e676" stroke-width="1.8" stroke-linecap="round"/>
+            <path d="M13 20.5 L11 27 M27 20.5 L29 27" stroke="#00e676" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+        </div>
+      </button>
+      <button class="profile-avatar-btn" id="pf-ise" style="--ring:#f472b6;--ring-dim:#f472b618;--ring-halo:#f472b622" onclick="pickProfile('ise')">
+        <div class="profile-avatar-ring">
+          <svg width="30" height="30" viewBox="0 0 40 40" fill="none">
+            <circle cx="20" cy="11" r="6" stroke="#f472b6" stroke-width="1.8"/>
+            <path d="M8 34c0-8.5 5-14 12-14s12 5.5 12 14" stroke="#f472b6" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M13.5 21c-.6 4 1 6.5 1 6.5M26.5 21c.6 4-1 6.5-1 6.5" stroke="#f472b6" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+        </div>
+      </button>
+    </div>
+    <button class="login-btn" id="login-enter-btn" style="opacity:.4;pointer-events:none;background:var(--muted)" onclick="enterApp()">Entrar no Flow</button>
     <div class="login-credit">Criado por Thiago Caetano</div>
   </div>
 </div>
@@ -428,7 +452,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
 var NOTION_PAGE="357e359a-2559-817f-a835-f3fcb81d7c41",NOTION_MCP="https://mcp.notion.com/mcp";
 var WATER_GOAL=3000,WEIGHT_GOAL=80,WEIGHT_START=72.5;
 var DAY_NAMES=["Domingo","Segunda","Terça","Quarta","Quinta","Sexta","Sábado"];
-var WORKOUTS={
+var WORKOUTS_THIAGO={
   1:{name:"Peito + Tríceps",icon:"💪",color:"#ff6535",exercises:[
     {id:"e1",name:"Supino Reto com Barra",sets:4,reps:"8–10",rest:"90s",benefit:"Principal construtor de massa do peitoral.",execution:"Deite no banco, barra na linha do peitoral. Desça controlado, suba explosivo. Cotovelos a 45°.",video:"https://www.youtube.com/watch?v=vIGvt-vgrvY",subs:[{n:"Supino com halteres",s:4,r:"8–10"},{n:"Flexão com pés elevados",s:4,r:"12–15"}]},
     {id:"e2",name:"Supino Inclinado com Halteres",sets:3,reps:"10–12",rest:"75s",benefit:"Peitoral superior, visual de cheio.",execution:"Banco a 30–45°. Suba e aproxime os halteres sem travar. Controle a descida.",video:"https://www.youtube.com/watch?v=_Yqfd8y2JOw",subs:[{n:"Supino inclinado máquina",s:3,r:"10–12"},{n:"Crossover alto",s:3,r:"12–15"}]},
@@ -467,7 +491,7 @@ var WORKOUTS={
   ]},
 };
 
-var MEAL_SLOTS=[
+var MEAL_SLOTS_THIAGO=[
   {id:"pretreino",time:"07:00",icon:"🍌",name:"Pré-Treino",options:[
     {id:"pt_a",label:"A",desc:"Banana + Aveia + Mel",cal:276,p:6,c:60,g:3,items:[{n:"Banana média",q:"1 un (120g)"},{n:"Aveia em flocos",q:"40g"},{n:"Mel",q:"1 col chá"}]},
     {id:"pt_b",label:"B",desc:"Pão + Ovo + Queijo",cal:280,p:16,c:26,g:10,items:[{n:"Pão integral",q:"2 fatias (60g)"},{n:"Ovo mexido",q:"1 un"},{n:"Queijo muçarela",q:"15g"}]},
@@ -507,6 +531,65 @@ var MEAL_SLOTS=[
   ]},
 ];
 
+// ── PERFIL DA ISE (gestante) ────────────────────────────────────────────────
+// Sem musculação nem corrida: alongamento prenatal todo dia (mesma rotina,
+// sem divisão por dia da semana) + caminhada/elíptico registrados em minutos
+// (o médico não passou tempo fixo). Nutrição sem glúten e baixo carboidrato,
+// só com o que foi liberado: peixe, frango, legumes, verduras, saladas, ovos,
+// queijo, crepioca (sem goma de tapioca) e frutas de baixo índice glicêmico.
+// Restrito: pão/arroz/macarrão/tapioca, carne vermelha, frituras, embutidos,
+// processados, jaca, pinha, abacate, uva.
+var ISE_STRETCHES=[
+  {id:"ie1",name:"Quadril (borboleta sentada)",cue:"Sentada, solas dos pés unidas, joelhos caindo pros lados. 30s, respire fundo.",video:"https://www.youtube.com/results?search_query=alongamento+quadril+borboleta+gestante"},
+  {id:"ie2",name:"Lombar (gato-vaca)",cue:"Apoiada em quatro apoios, alterne arquear e arredondar as costas. 8 repetições bem lentas.",video:"https://www.youtube.com/results?search_query=alongamento+lombar+gato+vaca+gestante"},
+  {id:"ie3",name:"Pernas (isquiotibiais sentada)",cue:"Sentada, uma perna estendida, incline levemente o tronco à frente. 30s cada lado.",video:"https://www.youtube.com/results?search_query=alongamento+posterior+coxa+sentada+gestante"},
+  {id:"ie4",name:"Ombros (rotação lenta)",cue:"Em pé ou sentada, gire os ombros pra trás lentamente. 10 repetições.",video:"https://www.youtube.com/results?search_query=alongamento+ombros+gestante"},
+];
+var WORKOUTS_ISE={};
+(function(){
+  var _diaIse={name:"Alongamento prenatal",icon:"🤸",color:"#f472b6",exercises:ISE_STRETCHES.map(function(s){
+    return{id:s.id,name:s.name,sets:"",reps:s.cue,rest:"",benefit:"Alongamento seguro pra gestação, sem impacto.",execution:s.cue,video:s.video,subs:[]};
+  })};
+  for(var _d=0;_d<=6;_d++)WORKOUTS_ISE[_d]=_diaIse;
+})();
+var MEAL_SLOTS_ISE=[
+  {id:"cafe_ise",time:"08:00",icon:"🥤",name:"Café da manhã",options:[
+    {id:"ci_a",label:"A",desc:"Suco verde: mamão, laranja, couve, morango, água",cal:150,p:3,c:34,g:1,items:[{n:"Mamão",q:"100g"},{n:"Laranja",q:"1 unidade"},{n:"Couve",q:"2 folhas"},{n:"Morango",q:"5 unidades"},{n:"Água",q:"a gosto"}]},
+    {id:"ci_b",label:"B",desc:"Suco verde, trocando a couve por espinafre",cal:145,p:3,c:33,g:1,items:[{n:"Mamão",q:"100g"},{n:"Laranja",q:"1 unidade"},{n:"Espinafre",q:"2 folhas"},{n:"Morango",q:"5 unidades"},{n:"Água",q:"a gosto"}]},
+    {id:"ci_c",label:"C",desc:"Suco verde + salada de frutas: morango, maçã, pera",cal:230,p:4,c:52,g:1,items:[{n:"Suco verde (receita A)",q:"1 copo"},{n:"Morango",q:"4 unidades"},{n:"Maçã",q:"1/2 unidade"},{n:"Pera",q:"1/2 unidade"}]},
+    {id:"ci_d",label:"D",desc:"Suco verde, trocando a laranja por melão",cal:130,p:3,c:29,g:1,items:[{n:"Mamão",q:"100g"},{n:"Melão",q:"100g"},{n:"Couve",q:"2 folhas"},{n:"Morango",q:"5 unidades"},{n:"Água",q:"a gosto"}]},
+  ]},
+  {id:"almoco_ise",time:"12:00",icon:"🐟",name:"Almoço",options:[
+    {id:"ai_a",label:"A",desc:"Tilápia grelhada + abobrinha refogada + salada verde",cal:320,p:38,c:10,g:14,items:[{n:"Tilápia grelhada",q:"180g"},{n:"Abobrinha refogada",q:"150g"},{n:"Salada verde",q:"à vontade"},{n:"Azeite",q:"1 col sopa"}]},
+    {id:"ai_b",label:"B",desc:"Frango grelhado + brócolis no vapor + salada colorida",cal:340,p:42,c:9,g:14,items:[{n:"Frango grelhado",q:"200g"},{n:"Brócolis no vapor",q:"150g"},{n:"Salada colorida",q:"à vontade"},{n:"Azeite",q:"1 col sopa"}]},
+    {id:"ai_c",label:"C",desc:"Salmão grelhado + couve-flor gratinada (sem farinha) + salada verde",cal:400,p:36,c:8,g:24,items:[{n:"Salmão grelhado",q:"180g"},{n:"Couve-flor gratinada com queijo",q:"150g"},{n:"Salada verde",q:"à vontade"},{n:"Azeite",q:"1 col sopa"}]},
+  ]},
+  {id:"lanche_ise",time:"16:00",icon:"🧀",name:"Lanche da tarde",options:[
+    {id:"li_a",label:"A",desc:"Crepioca de claras com queijo (sem goma de tapioca)",cal:180,p:16,c:2,g:12,items:[{n:"Ovos ou claras",q:"2 unidades"},{n:"Queijo tipo cottage ou minas",q:"30g"}]},
+    {id:"li_b",label:"B",desc:"Ovos mexidos + queijo + morango",cal:220,p:16,c:10,g:14,items:[{n:"Ovos mexidos",q:"2 unidades"},{n:"Queijo",q:"20g"},{n:"Morango",q:"100g"}]},
+    {id:"li_c",label:"C",desc:"Queijo + fruta de baixo índice glicêmico",cal:170,p:8,c:15,g:9,items:[{n:"Queijo",q:"30g"},{n:"Maçã ou pera",q:"100g"}]},
+  ]},
+  {id:"jantar_ise",time:"19:30",icon:"🌙",name:"Jantar",options:[
+    {id:"ji_a",label:"A",desc:"Frango grelhado + legumes no vapor + salada",cal:300,p:38,c:11,g:10,items:[{n:"Frango grelhado",q:"180g"},{n:"Abobrinha e cenoura no vapor",q:"150g"},{n:"Salada",q:"à vontade"}]},
+    {id:"ji_b",label:"B",desc:"Tilápia assada + purê de abóbora + salada verde",cal:290,p:36,c:14,g:8,items:[{n:"Tilápia assada",q:"180g"},{n:"Purê de abóbora",q:"120g"},{n:"Salada verde",q:"à vontade"}]},
+    {id:"ji_c",label:"C",desc:"Salmão grelhado + aspargos + salada colorida",cal:370,p:34,c:6,g:22,items:[{n:"Salmão grelhado",q:"170g"},{n:"Aspargos",q:"120g"},{n:"Salada colorida",q:"à vontade"},{n:"Azeite",q:"1 col sopa"}]},
+  ]},
+];
+var WORKOUTS=WORKOUTS_THIAGO,MEAL_SLOTS=MEAL_SLOTS_THIAGO;
+
+// Banco de frases compartilhado (mesmas ~380 frases e proverbios do dashboard
+// da Flow Sales) — uma "Frase do dia" sorteada por perfil, todo dia.
+var _QUOTES=['A vida não é o que acontece com você, mas como você reage ao que acontece.||Epicteto','Não exija que as coisas aconteçam como você quer. Queira que elas aconteçam como acontecem e você será feliz.||Epicteto','Nós sofremos mais na imaginação do que na realidade.||Epicteto','A liberdade não vem de satisfazer os desejos, mas de eliminar o desejo.||Epicteto','Faça o melhor que puder com o que está em seu poder e aceite o resto como ele é.||Epicteto','Não são as coisas que nos perturbam, mas as opiniões que temos sobre as coisas.||Epicteto','Não há progresso sem algum tipo de sofrimento.||Epicteto','Você tem poder sobre sua mente, não sobre eventos externos. Perceba isso e encontrará força.||Marco Aurélio','A qualidade de sua vida é determinada pela qualidade de seus pensamentos.||Marco Aurélio','Se não é certo, não faça. Se não é verdade, não diga.||Marco Aurélio','A melhor vingança é não ser como o seu inimigo.||Marco Aurélio','Ao acordar, pense no privilégio de estar vivo: de pensar, de sentir, de aproveitar a vida.||Marco Aurélio','Nunca considere algo como vantagem se isso te fizer quebrar sua palavra ou perder seu autorrespeito.||Marco Aurélio','Nada tem tanto poder para ampliar a mente quanto a habilidade de investigar sistematicamente.||Marco Aurélio','Desperdice seu tempo interior e você desperdiçará sua vida.||Marco Aurélio','Receba sem orgulho, liberte sem luta.||Marco Aurélio','Nenhum vento sopra a favor de quem não sabe para onde vai.||Sêneca','Não é que tenhamos pouco tempo, mas que desperdiçamos muito.||Sêneca','A sorte é o que acontece quando a preparação encontra a oportunidade.||Sêneca','Trate cada dia como uma vida completa.||Sêneca','Comece onde você está. Use o que você tem. Faça o que você pode.||Sêneca','Enquanto adiamos, a vida passa.||Sêneca','A maior riqueza é a pobreza dos desejos.||Sêneca','Quem não é grato com o pouco, não seria grato com muito.||Sêneca','Erramos antes, erramos durante, erramos depois de pensar.||Sêneca','Conhece-te a ti mesmo.||Sócrates','Uma vida não examinada não vale a pena ser vivida.||Sócrates','Só sei que nada sei.||Sócrates','A educação é o acender de uma chama, não o preenchimento de um recipiente.||Sócrates','A riqueza não traz a virtude, mas a virtude traz a riqueza.||Sócrates','Somos o que fazemos repetidamente. Excelência, portanto, não é um ato, mas um hábito.||Aristóteles','A felicidade depende de nós mesmos.||Aristóteles','O começo é a metade do todo.||Aristóteles','Educar a mente sem educar o coração não é educação.||Aristóteles','O prazer no trabalho coloca perfeição no trabalho.||Aristóteles','Quem supera seus medos será verdadeiramente livre.||Aristóteles','A raiz da educação é amarga, mas seus frutos são doces.||Aristóteles','Você é o que você repete todos os dias.||Aristóteles','O preço de ignorar a política é ser governado por pessoas inferiores.||Platão','Nunca desanime de descobrir o que ainda não sabe.||Platão','A necessidade é a mãe da invenção.||Platão','Ninguém entra no mesmo rio duas vezes.||Heráclito','A mudança é a única constante.||Heráclito','O caráter é o destino.||Heráclito','Não importa o quão devagar você vá, desde que não pare.||Confúcio','Escolha um trabalho que você ame e nunca terá que trabalhar um dia sequer.||Confúcio','Uma jornada de mil milhas começa com um único passo.||Confúcio','A vida é simples, mas insistimos em complicá-la.||Confúcio','Onde quer que você vá, vá com todo seu coração.||Confúcio','Nossa maior glória não é nunca cair, mas levantar cada vez que caímos.||Confúcio','O que não me mata, me fortalece.||Friedrich Nietzsche','Sem música, a vida seria um erro.||Friedrich Nietzsche','Aquele que tem um porquê pode suportar qualquer como.||Friedrich Nietzsche','Você deve ter caos dentro de você para dar à luz uma estrela dançante.||Friedrich Nietzsche','O talento acerta alvos que ninguém pode acertar. O gênio acerta alvos que ninguém pode ver.||Schopenhauer','A saúde não é tudo, mas sem ela, tudo é nada.||Schopenhauer','Riqueza é como água do mar: quanto mais bebemos, mais sede temos.||Schopenhauer','No meio do inverno, descobri em mim um verão invencível.||Albert Camus','Devemos imaginar Sísifo feliz.||Albert Camus','A luta por chegar ao topo é suficiente para encher o coração.||Albert Camus','A existência precede a essência.||Jean-Paul Sartre','A vida começa do outro lado do desespero.||Jean-Paul Sartre','Somos condenados a ser livres.||Jean-Paul Sartre','O presente sempre terá sido.||Simone de Beauvoir','A liberdade é o que você faz com o que foi feito de você.||Simone de Beauvoir','Quando não podemos mudar uma situação, somos desafiados a mudar a nós mesmos.||Viktor Frankl','Entre o estímulo e a resposta há um espaço. Nesse espaço está nosso poder de escolher.||Viktor Frankl','A vida nunca se torna insuportável por circunstâncias, mas pela falta de significado.||Viktor Frankl','Cada ser humano é questionado pela vida e só pode responder a ela respondendo por si mesmo.||Viktor Frankl','Quem olha para fora, sonha. Quem olha para dentro, desperta.||Carl Jung','Não somos o que nos aconteceu. Somos o que escolhemos nos tornar.||Carl Jung','Tudo que nos irrita nos outros pode nos levar a um entendimento de nós mesmos.||Carl Jung','Sua visão só se tornará clara quando você olhar para dentro do seu coração.||Carl Jung','A voz da inteligência é suave, mas não descansa até ser ouvida.||Sigmund Freud','Um dia, em retrospecto, os anos de luta serão os mais belos.||Sigmund Freud','O problema com o mundo é que os estúpidos têm tanta certeza e os inteligentes estão cheios de dúvidas.||Bertrand Russell','Para ganhar o respeito dos outros, é necessário primeiro ganhar o seu próprio respeito.||Bertrand Russell','A imaginação é mais importante que o conhecimento.||Albert Einstein','A vida é como andar de bicicleta. Para manter o equilíbrio, você deve continuar em movimento.||Albert Einstein','Insanidade é continuar fazendo as mesmas coisas e esperar resultados diferentes.||Albert Einstein','A mente que se abre a uma nova ideia jamais voltará ao seu tamanho original.||Albert Einstein','Se você não consegue explicar de forma simples, você não entendeu bem o suficiente.||Albert Einstein','Tente não se tornar uma pessoa de sucesso, mas sim uma pessoa de valor.||Albert Einstein','No meio da dificuldade encontra-se a oportunidade.||Albert Einstein','A criatividade é a inteligência se divertindo.||Albert Einstein','Não é que eu seja tão inteligente. É que fico com os problemas por mais tempo.||Albert Einstein','Aprenda com o ontem, viva para o hoje, tenha esperança para o amanhã.||Albert Einstein','Nada na vida deve ser temido, somente compreendido.||Marie Curie','Seja menos curioso sobre as pessoas e mais curioso sobre ideias.||Marie Curie','A persistência é o menor segredo do sucesso.||Marie Curie','Se vi mais longe, foi por estar sobre os ombros de gigantes.||Isaac Newton','O que sabemos é uma gota. O que ignoramos é um oceano.||Isaac Newton','A genialidade é paciência infinita.||Isaac Newton','Por mais difícil que a vida pareça, sempre há algo que você pode fazer e ter sucesso.||Stephen Hawking','Lembre-se de olhar para as estrelas, não para seus pés.||Stephen Hawking','A inteligência é a capacidade de se adaptar à mudança.||Stephen Hawking','O maior inimigo do conhecimento não é a ignorância, é a ilusão do conhecimento.||Stephen Hawking','Não é o mais forte que sobrevive, nem o mais inteligente, mas o que melhor se adapta à mudança.||Charles Darwin','A primeira regra é não se enganar, e você é a pessoa mais fácil de enganar.||Richard Feynman','Estude o que te interessa mais, da forma mais indisciplinada e original que puder.||Richard Feynman','Em algum lugar, algo incrível está esperando para ser descoberto.||Carl Sagan','Somos poeira de estrelas contemplando as estrelas.||Carl Sagan','A única forma de fazer um grande trabalho é amar o que você faz.||Steve Jobs','Seu tempo é limitado, não o desperdice vivendo a vida de outra pessoa.||Steve Jobs','A inovação é o que distingue um líder de um seguidor.||Steve Jobs','As pessoas loucas o suficiente para pensar que podem mudar o mundo são as que o fazem.||Steve Jobs','Fique com fome. Fique tolo.||Steve Jobs','A criatividade é apenas conectar as coisas.||Steve Jobs','Às vezes a vida bate com um tijolo na sua cabeça. Não perca a fé.||Steve Jobs','Tenha a coragem de seguir seu coração e intuição.||Steve Jobs','Você não pode conectar os pontos olhando para a frente. Só pode conectá-los olhando para trás.||Steve Jobs','Quando algo é suficientemente importante, você faz mesmo que as probabilidades não estejam a seu favor.||Elon Musk','Falhar é uma opção aqui. Se as coisas não estão falhando, você não está inovando o suficiente.||Elon Musk','Se você acordar pela manhã pensando que o futuro vai ser melhor, é um bom dia.||Elon Musk','Sua marca é o que as pessoas dizem sobre você quando você sai da sala.||Jeff Bezos','Na dúvida, escolha o que vai te arrepender menos no futuro.||Jeff Bezos','Seja teimoso em visão, mas flexível nos detalhes.||Jeff Bezos','Alguém está sentado na sombra hoje porque alguém plantou uma árvore há muito tempo.||Warren Buffett','Quanto mais você aprende, mais você ganha.||Warren Buffett','Preço é o que você paga. Valor é o que você recebe.||Warren Buffett','Leva 20 anos para construir uma reputação e cinco minutos para arruiná-la.||Warren Buffett','Se você sempre fizer o que sempre fez, sempre obterá o que sempre obteve.||Henry Ford','Obstáculos são aquelas coisas assustadoras que você vê quando tira os olhos do objetivo.||Henry Ford','Não encontre uma falha, encontre um remédio.||Henry Ford','Quando tudo parece ir contra você, lembre-se que o avião decola contra o vento, não a favor dele.||Henry Ford','Vir junto é começo. Ficar juntos é progresso. Trabalhar juntos é sucesso.||Henry Ford','O fracasso é simplesmente a oportunidade de começar de novo, desta vez mais inteligentemente.||Henry Ford','Todos os seus sonhos podem se tornar realidade se você tiver coragem de persegui-los.||Walt Disney','A forma de começar é parar de falar e começar a fazer.||Walt Disney','Se você puder sonhar, você pode fazê-lo.||Walt Disney','É divertido fazer o impossível.||Walt Disney','As flores que desabrocham nas adversidades são as mais raras e belas.||Walt Disney','O sucesso é a capacidade de ir de fracasso em fracasso sem perder o entusiasmo.||Winston Churchill','Se você está passando pelo inferno, continue andando.||Winston Churchill','Nunca, nunca, nunca desista.||Winston Churchill','O pessimista vê dificuldade em cada oportunidade. O otimista vê oportunidade em cada dificuldade.||Winston Churchill','O sucesso não é final, o fracasso não é fatal. É a coragem de continuar que conta.||Winston Churchill','Dê-me seis horas para cortar uma árvore e passarei as quatro primeiras afiando o machado.||Abraham Lincoln','No final, não são os anos em sua vida que contam, mas a vida em seus anos.||Abraham Lincoln','O caráter é como uma árvore e a reputação como sua sombra.||Abraham Lincoln','Seja a mudança que você deseja ver no mundo.||Mahatma Gandhi','Primeiro eles te ignoram, depois riem de você, depois lutam contra você. Aí você vence.||Mahatma Gandhi','A força não vem da capacidade física. Vem de uma vontade indomável.||Mahatma Gandhi','A vida é um mistério que deve ser vivido, não um problema a ser resolvido.||Mahatma Gandhi','Um fraco nunca pode perdoar. O perdão é atributo do forte.||Mahatma Gandhi','A velocidade é irrelevante se você está indo na direção errada.||Mahatma Gandhi','Sempre parece impossível até que seja feito.||Nelson Mandela','A maior glória em viver não está em nunca cair, mas em se levantar cada vez que caímos.||Nelson Mandela','Educação é a arma mais poderosa que você pode usar para mudar o mundo.||Nelson Mandela','Um vencedor é um sonhador que nunca desistiu.||Nelson Mandela','A coragem não é ausência de medo, mas o triunfo sobre ele.||Nelson Mandela','Tudo parece impossível até que alguém o faça.||Nelson Mandela','Dê um passo agora, mesmo que não veja toda a escada.||Martin Luther King Jr.','A escuridão não pode expulsar a escuridão. Somente a luz pode fazer isso.||Martin Luther King Jr.','Se você não pode voar, corra. Se não pode correr, ande. Se não pode andar, engatinhe. Mas continue.||Martin Luther King Jr.','A medida de um ser humano não é onde está em momentos de conforto, mas nos de desafio.||Martin Luther King Jr.','Faça o que puder, com o que tiver, onde estiver.||Theodore Roosevelt','Acredite que você pode e você já está na metade do caminho.||Theodore Roosevelt','Nada que vale a pena ter vem facilmente.||Theodore Roosevelt','Não pergunte o que seu país pode fazer por você. Pergunte o que você pode fazer pelo seu país.||John F. Kennedy','Esforço e coragem não são suficientes sem propósito e direção.||John F. Kennedy','Cada conquista começa com a decisão de tentar.||John F. Kennedy','A única coisa que devemos temer é o próprio medo.||Franklin D. Roosevelt','A felicidade não está na simples posse do dinheiro. Está na alegria da conquista.||Franklin D. Roosevelt','O futuro pertence àqueles que acreditam na beleza dos seus sonhos.||Eleanor Roosevelt','Grandes mentes discutem ideias. Mentes medianas discutem eventos. Mentes pequenas discutem pessoas.||Eleanor Roosevelt','Você ganha força, coragem e confiança em cada experiência em que você para e enfrenta o medo.||Eleanor Roosevelt','Aprender não cansa a mente.||Leonardo da Vinci','A simplicidade é a sofisticação máxima.||Leonardo da Vinci','A experiência nunca erra. São apenas nossos julgamentos que erram.||Leonardo da Vinci','O ferro enferruja sem uso. A água fica estagnada sem movimento. Assim também a inação enfraquece.||Leonardo da Vinci','Nossas dúvidas são traidoras e nos fazem perder o bem que poderíamos obter por medo de tentar.||William Shakespeare','A bondade é a maior cortesia.||William Shakespeare','Acima de tudo, não minta para si mesmo.||Fiódor Dostoiévski','A dor e o sofrimento são inevitáveis para uma inteligência ampla e um coração profundo.||Fiódor Dostoiévski','Todos pensam em mudar o mundo, mas ninguém pensa em mudar a si mesmo.||León Tolstói','A felicidade não consiste em fazer o que queremos, mas em querer o que fazemos.||León Tolstói','Não existe árvore que o vento não tenha sacudido.||Victor Hugo','Os sonhadores são indispensáveis à humanidade.||Victor Hugo','O futuro tem muitos nomes. Para os corajosos, é a oportunidade.||Victor Hugo','Nem todos os que vagam estão perdidos.||J.R.R. Tolkien','Mesmo a menor pessoa pode mudar o curso do futuro.||J.R.R. Tolkien','A vida não é o que se viveu, mas o que se recorda e como se recorda para narrá-la.||Gabriel García Márquez','A sabedoria nos chega quando não é mais útil.||Gabriel García Márquez','Coragem é não ter medo de si mesmo.||Clarice Lispector','A vida se faz de escolhas. E cada escolha é uma renúncia.||Clarice Lispector','É preciso correr o risco de ser feliz.||Clarice Lispector','Quando você quer algo, o universo inteiro conspira para que você realize esse desejo.||Paulo Coelho','O mundo está nas mãos daqueles que têm a coragem de sonhar.||Paulo Coelho','Nunca desista dos seus sonhos. O sofrimento acontece quando se desiste.||Paulo Coelho','Você não pode ultrapassar alguém se não se arriscar.||Ayrton Senna','Cada vez que você supera um limite, você descobre um novo horizonte.||Ayrton Senna','Você precisa mostrar que está no jogo por mérito e não por acidente.||Ayrton Senna','Talento sem trabalho é desperdício.||Ayrton Senna','Não conte os dias. Faça os dias contarem.||Muhammad Ali','O homem que não tem imaginação não tem asas.||Muhammad Ali','Impossível é apenas uma grande palavra jogada por quem não ousa tentar.||Muhammad Ali','Eu posso aceitar o fracasso. Mas não consigo aceitar não tentar.||Michael Jordan','Nunca diga nunca, porque limites, como os medos, muitas vezes são apenas uma ilusão.||Michael Jordan','Oportunidades de negócio são como ônibus — sempre haverá outro chegando.||Richard Branson','Não pense no que pode dar errado. Pense no que pode dar certo.||Richard Branson','Dor mais reflexão é igual a progresso.||Ray Dalio','A realidade é boa mesmo quando é dolorosa.||Ray Dalio','Paz é a felicidade em repouso. A felicidade é a paz em movimento.||Naval Ravikant','Leia o que ama até que você ame ler.||Naval Ravikant','A posição mais poderosa é a calma.||Naval Ravikant','A dificuldade é o que desperta o gênio.||Nassim Taleb','As pessoas não compram o que você faz. Elas compram o porquê você faz.||Simon Sinek','O sucesso é a soma de pequenos esforços repetidos dia após dia.||Simon Sinek','A coragem começa com aparecer e deixar-se ver.||Brené Brown','Vulnerabilidade não é ganhar ou perder. É ter a coragem de aparecer e ser visto.||Brené Brown','Eficiência é fazer as coisas certo. Eficácia é fazer as coisas certas.||Peter Drucker','O que é medido, é gerenciado.||Peter Drucker','É bom celebrar o sucesso, mas é mais importante prestar atenção às lições do fracasso.||Bill Gates','O sucesso é um professor horrível. Ele seduz e faz pensar que você não pode perder.||Bill Gates','Nunca desista. Hoje é difícil, amanhã será pior, mas o depois de amanhã será o pôr do sol.||Jack Ma','A humildade não é pensar menos de si mesmo, mas pensar em si mesmo com menos frequência.||C.S. Lewis','Conhecer os outros é inteligência. Conhecer a si mesmo é verdadeira sabedoria.||Lao-Tsé','Quem não sabe ceder não é forte.||Lao-Tsé','Quanto menos você busca aprovação, mais aprovação você recebe.||Lao-Tsé','Conheça seu inimigo, conheça a si mesmo e em cem batalhas nunca estará em perigo.||Sun Tzu','A suprema arte da guerra é derrotar o inimigo sem lutar.||Sun Tzu','No meio do caos, há também oportunidade.||Sun Tzu','Não deixe o perfeito ser inimigo do bom.||Voltaire','O trabalho afasta de nós três grandes males: o tédio, o vício e a necessidade.||Voltaire','Todos os problemas da humanidade surgem da incapacidade de sentar quieto e sozinho em uma sala.||Blaise Pascal','O conhecimento é poder.||Francis Bacon','Leia não para contradizer e refutar, mas para pesar e considerar.||Francis Bacon','A ciência é o conhecimento organizado. Sabedoria é a vida organizada.||Immanuel Kant','Nada de grande no mundo foi realizado sem paixão.||Georg Wilhelm Friedrich Hegel','O gênio é um por cento de inspiração e noventa e nove por cento de transpiração.||Thomas Edison','Eu não falhei. Eu apenas encontrei dez mil formas que não funcionam.||Thomas Edison','Nossa maior fraqueza está em desistir. A forma mais certa de sucesso é sempre tentar mais uma vez.||Thomas Edison','O presente é deles. O futuro, pelo qual eu realmente trabalhei, é meu.||Nikola Tesla','As ideias nascem quando se está sozinho.||Nikola Tesla','Diga-me e eu esqueço. Ensina-me e eu lembro. Envolva-me e eu aprendo.||Benjamin Franklin','Um investimento em conhecimento paga os melhores juros.||Benjamin Franklin','Por falhar em preparar, você está se preparando para falhar.||Benjamin Franklin','Os dois dias mais importantes da sua vida são: quando você nasce e quando descobre por quê.||Mark Twain','Daqui a vinte anos você estará mais decepcionado com as coisas que não fez do que com as que fez.||Mark Twain','Segredo para avançar é começar.||Mark Twain','Aja como se o que você faz fizesse diferença. Faz.||William James','A maior revolução é descobrir que podemos mudar nossas vidas mudando nossas atitudes mentais.||William James','Não vá onde o caminho pode levar. Vá onde não há caminho e deixe uma trilha.||Ralph Waldo Emerson','Faça o que você tem medo de fazer.||Ralph Waldo Emerson','Uma vez que você tome uma decisão, o universo conspira para que ela aconteça.||Ralph Waldo Emerson','O que você faz fala tão alto que não consigo ouvir o que você diz.||Ralph Waldo Emerson','Vá com confiança na direção dos seus sonhos. Viva a vida que você imaginou.||Henry David Thoreau','A riqueza não é ter o que você quer, mas desfrutar do que você tem.||Henry David Thoreau','O sucesso geralmente vem para quem está ocupado demais para ficar procurando por ele.||Henry David Thoreau','Seja você mesmo. Todo mundo já foi.||Oscar Wilde','Nós somos todos na sarjeta, mas alguns de nós estão olhando para as estrelas.||Oscar Wilde','A vida não é sobre se encontrar. É sobre se criar.||George Bernard Shaw','Progresso é impossível sem mudança, e quem não consegue mudar a mente não consegue mudar nada.||George Bernard Shaw','A vitória pertence ao mais perseverante.||Napoleão Bonaparte','Impossível é uma palavra encontrada apenas no dicionário dos tolos.||Napoleão Bonaparte','Ontem fui inteligente e queria mudar o mundo. Hoje sou sábio e estou mudando a mim mesmo.||Rumi','A ferida é o lugar por onde a luz entra em você.||Rumi','Você não é uma gota no oceano. Você é o oceano inteiro em uma gota.||Rumi','Em silêncio, há eloquência. Pare de tecer e veja como o padrão melhora.||Rumi','A dor é a ruptura da casca que envolve seu entendimento.||Khalil Gibran','A vida é uma aventura audaciosa ou não é nada.||Helen Keller','Otimismo é a fé que leva à realização.||Helen Keller','A única coisa pior do que ser cego é ter visão mas não ter propósito.||Helen Keller','Se você julgar as pessoas, não terá tempo para amá-las.||Madre Teresa de Calcutá','Não esperamos que façam grandes coisas. Só pequenas coisas com grande amor.||Madre Teresa de Calcutá','Se você quer que os outros sejam felizes, pratique a compaixão.||Dalai Lama','Não deixe o comportamento dos outros destruir sua paz interior.||Dalai Lama','Minha religião é muito simples. Minha religião é a bondade.||Dalai Lama','Não é a montanha que conquistamos, mas a nós mesmos.||Edmund Hillary','O sucesso não é acidente. É trabalho duro, perseverança, aprendizado e amor pelo que faz.||Pelé','Comecei cedo. Fiz sacrifícios. Trabalhei muito. E aqui estou.||Lionel Messi','A vida é o que acontece quando você está ocupado fazendo outros planos.||John Lennon','Um sonho que você sonha sozinho é apenas um sonho. Um sonho que você sonha junto é realidade.||John Lennon','Você nunca vai saber quão forte você é até que ser forte seja a única escolha.||Bob Marley','Você é a média das cinco pessoas com quem passa mais tempo.||Jim Rohn','Ou você administra seu dia ou o dia te administra.||Jim Rohn','A disciplina é a ponte entre objetivos e conquistas.||Jim Rohn','Se você não está disposto a arriscar o comum, você terá que se contentar com o ordinário.||Jim Rohn','Mudança é difícil no começo, bagunçada no meio e linda no final.||Robin Sharma','Pequenas melhorias diárias são a chave para resultados extraordinários.||Robin Sharma','O melhor momento para começar era ontem. O próximo melhor momento é agora.||Seth Godin','Seja notável ou seja invisível.||Seth Godin','Você não tem que ser grande para começar, mas você tem que começar para ser grande.||Zig Ziglar','Sua atitude, não suas aptidões, determinará sua altitude.||Zig Ziglar','A ação faz do medo um amigo.||Dale Carnegie','O que a mente pode conceber e acreditar, a mente pode alcançar.||Napoleon Hill','A derrota nunca é o mesmo que o fracasso, a menos que você a aceite como tal.||Napoleon Hill','Não espere. O momento nunca será perfeito.||Napoleon Hill','A liderança é influência, nada mais nada menos.||John Maxwell','Um líder é aquele que conhece o caminho, vai pelo caminho e mostra o caminho.||John Maxwell','Bom é o inimigo do ótimo.||Jim Collins','Procure primeiro entender, depois ser entendido.||Stephen Covey','O que diferencia os melhores é o grit — paixão e perseverança pelo longo prazo.||Angela Duckworth','Talento é apenas um ponto de partida.||Angela Duckworth','Em um mindset de crescimento, os desafios são emocionantes em vez de ameaçadores.||Carol Dweck','A paixão por aprender, e não por validação, é a marca do mindset de crescimento.||Carol Dweck','Educação é o passaporte para o futuro, pois o amanhã pertence a quem se preparar hoje.||Malcolm X','Apesar de tudo, eu ainda acredito que as pessoas são boas de coração.||Anne Frank','Nada funcionará a menos que você funcione.||Maya Angelou','Tente ser um arco-íris na nuvem de alguém.||Maya Angelou','Você pode não controlar todos os eventos que acontecem com você, mas pode decidir não ser reduzido por eles.||Maya Angelou','Se há um livro que você quer ler mas ainda não foi escrito, você deve escrevê-lo.||Toni Morrison','Você recebe na vida o que você tem coragem de pedir.||Oprah Winfrey','Transforme suas feridas em sabedoria.||Oprah Winfrey','Nunca pinte sonhos ou pesadelos. Pintei minha própria realidade.||Frida Kahlo','Não sou nada. Nunca serei nada. À parte isso, tenho em mim todos os sonhos do mundo.||Fernando Pessoa','Comece por fazer o que é necessário, depois o que é possível, e de repente estará fazendo o impossível.||São Francisco de Assis','Ama e faz o que quiseres.||Santo Agostinho','Penso, logo existo.||René Descartes','Seja o tipo de pessoa que você gostaria de ter ao seu lado.||Wayne Dyer','Mude como você olha para as coisas e as coisas que você olha mudam.||Wayne Dyer','Você não atrairá o que você quer, mas o que você é.||Wayne Dyer','Se a oportunidade não bate à sua porta, construa uma porta.||Milton Berle','A vida é muito curta para ser pequena.||Benjamin Disraeli','Seja tão bom que eles não possam te ignorar.||Steve Martin','Só aqueles que se arriscam a ir longe demais descobrem o quão longe podem ir.||T.S. Eliot','A melhor hora de plantar uma árvore foi vinte anos atrás. A segunda melhor hora é agora.||Provérbio Chinês','Uma mente que se expande para abraçar uma nova ideia nunca volta ao seu tamanho original.||Oliver Wendell Holmes','Perseverança não é uma corrida longa. São muitas corridas curtas, uma após a outra.||Walter Elliot','Quanto maior o obstáculo, maior a glória em superá-lo.||Molière','Você não falha quando cai. Falha quando decide ficar no chão.||Mary Pickford','Você é mais corajoso do que acredita, mais forte do que parece e mais esperto do que pensa.||A.A. Milne','Faça hoje o que outros não querem fazer e amanhã terá o que outros não podem ter.||Jerry Rice','Quanto mais você trabalha, mais sorte você tem.||Thomas Jefferson','Não tenha medo de desistir do bom para ir atrás do ótimo.||John D. Rockefeller','O maior risco é não arriscar nada.||Mark Zuckerberg','Trabalho duro supera talento quando talento não trabalha duro.||Tim Notke','A diferença entre possível e impossível está na determinação.||Tommy Lasorda','Os líderes excepcionais não nascem — eles se constroem.||Vince Lombardi','A diferença entre uma pessoa bem-sucedida e outras não é a falta de força, mas a falta de vontade.||Vince Lombardi','Não importa quantas vezes você caia, o que importa é quantas vezes você se levanta.||Vince Lombardi','Desenvolva uma paixão pelo aprendizado. Se você fizer isso, nunca parará de crescer.||Anthony J. D\'Angelo','Qualidade significa fazer certo mesmo quando ninguém está olhando.||Henry Ford','A persistência é o caminho do êxito.||Charles Chaplin','Escreva as coisas ruins que te aconteceram na areia, mas escreva as boas em pedra.||Provérbio Árabe','Não importa o quão grande a pressão. Lembre-se que os diamantes são feitos sob pressão.||H. Jackson Brown Jr.','Você só vive uma vez, mas se você fizer direito, uma vez é o suficiente.||Mae West','É melhor tentar e falhar do que nunca tentar e sempre se perguntar.||Jack London','Todo progresso acontece fora da zona de conforto.||Michael John Bobak','Sonhe grande e ouse falhar.||Norman Vaughan','Não há atalho para qualquer lugar que valha a pena ir.||Beverly Sills','A vida começa quando você sai da sua zona de conforto.||Neale Donald Walsch','As oportunidades não acontecem. Você as cria.||Chris Grosser','Confia no Senhor de todo o teu coração, e não te estribes no teu próprio entendimento.||Provérbios 3:5','Em todos os teus caminhos reconhece-o, e ele endireitará as tuas veredas.||Provérbios 3:6','A resposta branda desvia o furor, mas a palavra dura suscita a ira.||Provérbios 15:1','Antes da destruição, eleva-se o coração do homem, e adiante da honra vai a humildade.||Provérbios 18:12','Antes da quebra vai a soberba, e antes da queda, a altivez do espírito.||Provérbios 16:18','Como o ferro com o ferro se aguça, assim o homem aguça o rosto do seu amigo.||Provérbios 27:17','Aquele que anda em integridade anda seguro, mas o que perverte os seus caminhos será conhecido.||Provérbios 10:9','A esperança que se adia entristece o coração, mas o desejo cumprido é árvore de vida.||Provérbios 13:12','O coração alegre serve de bom remédio, mas o espírito abatido seca os ossos.||Provérbios 17:22','Não te gabes do dia de amanhã, porque não sabes o que produzirá o dia seguinte.||Provérbios 27:1','Porque sete vezes cai o justo e se torna a levantar, mas os ímpios tropeçam no mal.||Provérbios 24:16','Instrui a criança no caminho em que deve andar, e até quando envelhecer não se desviará dele.||Provérbios 22:6','Onde não há conselho, ficam frustrados os projetos, mas com a multidão de conselheiros se confirmam.||Provérbios 15:22','O nome do Senhor é uma torre forte; o justo corre para ela e está seguro.||Provérbios 18:10','Melhor é o que tarda em irar-se do que o poderoso, e o que domina o seu espírito do que o que toma uma cidade.||Provérbios 16:32','Aquele que encobre as suas transgressões nunca prosperará, mas o que as confessa e deixa alcançará misericórdia.||Provérbios 28:13','A bênção do Senhor é que enriquece, e não lhe acrescenta dores.||Provérbios 10:22','Como águas frias para a alma sedenta, tais são as boas novas de terras distantes.||Provérbios 25:25','O que confia no seu próprio coração é louco, mas o que anda em sabedoria será livre.||Provérbios 28:26','Mais vale o vizinho perto do que o irmão longe.||Provérbios 27:10','O temor do Senhor é o princípio do conhecimento; os loucos desprezam a sabedoria e a instrução.||Provérbios 1:7','A boca do justo produz sabedoria, mas a língua perversa se cortará.||Provérbios 10:31','Todo caminho do homem é reto aos seus próprios olhos, mas o Senhor pesa os corações.||Provérbios 21:2','Aquele que anda com os sábios será sábio, mas o companheiro dos tolos será destruído.||Provérbios 13:20','A morte e a vida estão no poder da língua, e aquele que a ama comerá do seu fruto.||Provérbios 18:21','Melhor é o pouco com o temor do Senhor do que um grande tesouro com inquietação.||Provérbios 15:16','Confia ao Senhor as tuas obras, e teus pensamentos serão bem-sucedidos.||Provérbios 16:3','Melhor é adquirir a sabedoria do que o ouro fino, e mais excelente é adquirir a prudência do que a prata.||Provérbios 16:16','O que caminha em retidão anda seguro; mas o que perverte os seus caminhos será conhecido.||Provérbios 10:9','Não digas: Como ele me fez, também eu lhe farei; pagarei a cada um segundo a sua obra.||Provérbios 24:29','O justo pensa em responder, mas a boca dos ímpios derrama coisas más.||Provérbios 15:28','Enche-se de trabalho aquele que segue os vadios; mas o que ama a diligência será saciado de fartura.||Provérbios 28:19','Aquele que aperta a mão para pecar cairá; mas o que aborrece a arras fica seguro.||Provérbios 11:21','O caminho do preguiçoso é como uma sebe de espinhos; mas a vereda dos retos está bem aplanada.||Provérbios 15:19','A alma abençoadora engordará, e o que regar também será regado.||Provérbios 11:25','Melhor é o pouco com justiça do que a abundância de rendimentos com injustiça.||Provérbios 16:8','Aquele que é tardio em irar-se é grande em entendimento, mas o que é de espírito impaciente exalta a loucura.||Provérbios 14:29','O que semeia a injustiça colherá calamidade, e a vara da sua indignação de todo se acabará.||Provérbios 22:8','Como coroa de honra é a cabeça grisalha, quando se acha no caminho da justiça.||Provérbios 16:31','As ovelhas do teu rebanho conhece bem, e cuida do teu gado.||Provérbios 27:23'];
+function _quoteHash(s){var h=0;for(var i=0;i<s.length;i++){h=(Math.imul(31,h)+s.charCodeAt(i))|0;}return Math.abs(h);}
+function getDailyQuote(){
+  var todayStr=todayKey();
+  var dmk="ft4_dailymsg_"+(PROFILE||"x");
+  var dm=null;
+  try{var raw=localStorage.getItem(dmk);if(raw){var o=JSON.parse(raw);if(o.date===todayStr)dm=o.msg;}}catch(e){}
+  if(!dm){dm=_QUOTES[_quoteHash(todayStr+(PROFILE||""))%_QUOTES.length];try{localStorage.setItem(dmk,JSON.stringify({date:todayStr,msg:dm}));}catch(e){}}
+  return dm;
+}
+
 var ACHIEVEMENTS=[
   {id:"a1",icon:"🥇",name:"Primeiro treino",sub:"Complete seu 1° treino",check:function(h){return h.filter(function(e){return e.doneEx>0;}).length>=1;}},
   {id:"a2",icon:"🔥",name:"3 dias seguidos",sub:"Treinar 3 dias consecutivos",check:function(h){return getBestStreak(h)>=3;}},
@@ -522,6 +605,27 @@ var ACHIEVEMENTS=[
   {id:"a12",icon:"😴",name:"Sono em dia",sub:"7 noites completas",check:function(h){return h.filter(function(e){return e.sonoHours>=7;}).length>=7;}},
   {id:"a13",icon:"📚",name:"Leitor dedicado",sub:"30min de leitura por 7 dias",check:function(h){return h.filter(function(e){return (e.leitura||0)>=30;}).length>=7;}},
 ];
+
+// ── PERFIL (Thiago / Ise) ─────────────────────────────────────────────────────
+// PROFILE decide qual conjunto de dados fica ativo (WORKOUTS/MEAL_SLOTS) e
+// prefixa todas as chaves do localStorage + o documento do Firebase, pra cada
+// perfil ter seu próprio histórico sem se misturar com o do outro.
+var PROFILE=localStorage.getItem("ft4_active_profile")||null;
+var _selectedProfile=null;
+function _pfx(){return PROFILE==="ise"?"_ise":"";}
+function pickProfile(p){
+  _selectedProfile=p;
+  document.getElementById("pf-thiago").classList.toggle("sel",p==="thiago");
+  document.getElementById("pf-ise").classList.toggle("sel",p==="ise");
+  var btn=document.getElementById("login-enter-btn");
+  btn.style.opacity="1";btn.style.pointerEvents="auto";
+  btn.style.background=p==="thiago"?"#00e676":"#f472b6";
+}
+function _applyProfileData(){
+  if(PROFILE==="ise"){WORKOUTS=WORKOUTS_ISE;MEAL_SLOTS=MEAL_SLOTS_ISE;}
+  else{WORKOUTS=WORKOUTS_THIAGO;MEAL_SLOTS=MEAL_SLOTS_THIAGO;}
+}
+var iseCaminhadaMin=0,iseElipticoMin=0;
 
 // ── STATE ─────────────────────────────────────────────────────────────────────
 var currentTab="hoje",checked={},selectedOptions={},notes="";
@@ -540,7 +644,7 @@ var runLayerSat,runLayerHyb,runLayerStr,runLabels;
 // ── HELPERS ───────────────────────────────────────────────────────────────────
 function todayKey(){return new Date().toISOString().split("T")[0];}
 function dow(){return new Date().getDay();}
-function isRunDay(){var d=dow();return d===6||d===0;}
+function isRunDay(){if(PROFILE==="ise")return false;var d=dow();return d===6||d===0;}
 function isWeekend(){return isRunDay();}
 function getWorkout(){return WORKOUTS[dow()]||null;}
 function fmt2(n){return n<10?"0"+n:""+n;}
@@ -550,26 +654,26 @@ function getWeekKey(dateStr){var d=new Date(dateStr+"T12:00:00"),dw=d.getDay(),m
 // ── STORAGE ───────────────────────────────────────────────────────────────────
 function loadState(){
   try{
-    var s=localStorage.getItem("ft4_"+todayKey());
-    if(s){var d=JSON.parse(s);checked=d.checked||{};notes=d.notes||"";selectedOptions=d.selectedOptions||{};sleepStart=d.sleepStart||"";sleepEnd=d.sleepEnd||"";sleepQuality=d.sleepQuality||"";readingMinutes=d.readingMinutes||0;readingGoal=d.readingGoal||30;if(d.waterLog&&d.waterLog.length>0){localStorage.setItem("ft4_water_"+todayKey(),JSON.stringify(d.waterLog));}}
+    var s=localStorage.getItem("ft4"+_pfx()+"_"+todayKey());
+    if(s){var d=JSON.parse(s);checked=d.checked||{};notes=d.notes||"";selectedOptions=d.selectedOptions||{};sleepStart=d.sleepStart||"";sleepEnd=d.sleepEnd||"";sleepQuality=d.sleepQuality||"";readingMinutes=d.readingMinutes||0;readingGoal=d.readingGoal||30;iseCaminhadaMin=d.iseCaminhadaMin||0;iseElipticoMin=d.iseElipticoMin||0;if(d.waterLog&&d.waterLog.length>0){localStorage.setItem("ft4"+_pfx()+"_water_"+todayKey(),JSON.stringify(d.waterLog));}}
   }catch(e){}
-  try{var p=localStorage.getItem("ft4_persist");if(p){var pd=JSON.parse(p);if(!Object.keys(selectedOptions).length)selectedOptions=pd.selectedOptions||{};readingGoal=pd.readingGoal||readingGoal;}}catch(e){}
-  if(!Object.keys(selectedOptions).length){try{var yd=new Date();yd.setDate(yd.getDate()-1);var ys=localStorage.getItem("ft4_"+yd.toISOString().split("T")[0]);if(ys){var y2=JSON.parse(ys);if(y2.selectedOptions)selectedOptions=y2.selectedOptions;}}catch(e){}}
+  try{var p=localStorage.getItem("ft4"+_pfx()+"_persist");if(p){var pd=JSON.parse(p);if(!Object.keys(selectedOptions).length)selectedOptions=pd.selectedOptions||{};readingGoal=pd.readingGoal||readingGoal;}}catch(e){}
+  if(!Object.keys(selectedOptions).length){try{var yd=new Date();yd.setDate(yd.getDate()-1);var ys=localStorage.getItem("ft4"+_pfx()+"_"+yd.toISOString().split("T")[0]);if(ys){var y2=JSON.parse(ys);if(y2.selectedOptions)selectedOptions=y2.selectedOptions;}}catch(e){}}
 }
 function saveState(){
-  try{localStorage.setItem("ft4_"+todayKey(),JSON.stringify({checked:checked,notes:notes,selectedOptions:selectedOptions,sleepStart:sleepStart,sleepEnd:sleepEnd,sleepQuality:sleepQuality,readingMinutes:readingMinutes,readingGoal:readingGoal,waterLog:getWaterLog(),savedAt:new Date().toISOString()}));localStorage.setItem("ft4_persist",JSON.stringify({selectedOptions:selectedOptions,readingGoal:readingGoal}));updateHistory();}catch(e){}
+  try{localStorage.setItem("ft4"+_pfx()+"_"+todayKey(),JSON.stringify({checked:checked,notes:notes,selectedOptions:selectedOptions,sleepStart:sleepStart,sleepEnd:sleepEnd,sleepQuality:sleepQuality,readingMinutes:readingMinutes,readingGoal:readingGoal,iseCaminhadaMin:iseCaminhadaMin,iseElipticoMin:iseElipticoMin,waterLog:getWaterLog(),savedAt:new Date().toISOString()}));localStorage.setItem("ft4"+_pfx()+"_persist",JSON.stringify({selectedOptions:selectedOptions,readingGoal:readingGoal}));updateHistory();}catch(e){}
   var ls=document.getElementById("local-save");if(ls){ls.style.display="block";setTimeout(function(){ls.style.display="none";},1400);}
 }
-function getHistory(){try{var h=localStorage.getItem("ft4_history");return h?JSON.parse(h):[];}catch(e){return[];}}
-function saveHistory(h){try{localStorage.setItem("ft4_history",JSON.stringify(h));}catch(e){}}
-function getRuns(){try{var r=localStorage.getItem("ft4_runs");return r?JSON.parse(r):[];}catch(e){return[];}}
-function saveRuns(r){try{localStorage.setItem("ft4_runs",JSON.stringify(r));}catch(e){}}
-function getWeights(){try{var w=localStorage.getItem("ft4_weights");return w?JSON.parse(w):[];}catch(e){return[];}}
-function saveWeights(w){try{localStorage.setItem("ft4_weights",JSON.stringify(w));}catch(e){}}
-function getWaterLog(){try{var w=localStorage.getItem("ft4_water_"+todayKey());return w?JSON.parse(w):[];}catch(e){return[];}}
-function saveWaterLog(log){try{localStorage.setItem("ft4_water_"+todayKey(),JSON.stringify(log));}catch(e){}}
+function getHistory(){try{var h=localStorage.getItem("ft4"+_pfx()+"_history");return h?JSON.parse(h):[];}catch(e){return[];}}
+function saveHistory(h){try{localStorage.setItem("ft4"+_pfx()+"_history",JSON.stringify(h));}catch(e){}}
+function getRuns(){try{var r=localStorage.getItem("ft4"+_pfx()+"_runs");return r?JSON.parse(r):[];}catch(e){return[];}}
+function saveRuns(r){try{localStorage.setItem("ft4"+_pfx()+"_runs",JSON.stringify(r));}catch(e){}}
+function getWeights(){try{var w=localStorage.getItem("ft4"+_pfx()+"_weights");return w?JSON.parse(w):[];}catch(e){return[];}}
+function saveWeights(w){try{localStorage.setItem("ft4"+_pfx()+"_weights",JSON.stringify(w));}catch(e){}}
+function getWaterLog(){try{var w=localStorage.getItem("ft4"+_pfx()+"_water_"+todayKey());return w?JSON.parse(w):[];}catch(e){return[];}}
+function saveWaterLog(log){try{localStorage.setItem("ft4"+_pfx()+"_water_"+todayKey(),JSON.stringify(log));}catch(e){}}
 function getTotalWater(){return getWaterLog().reduce(function(a,b){return a+b.ml;},0);}
-function getPhotos(){try{var p=localStorage.getItem("ft4_photos");return p?JSON.parse(p):[];}catch(e){return[];}}
+function getPhotos(){try{var p=localStorage.getItem("ft4"+_pfx()+"_photos");return p?JSON.parse(p):[];}catch(e){return[];}}
 function updateHistory(){
   var hist=getHistory(),w=getWorkout(),dateStr=todayKey();
   var exIds=w?w.exercises.map(function(e){return e.id;}):[]; 
@@ -657,25 +761,26 @@ async function saveToFirebase(){
     if(!window._fbReady){setSyncStatus(false);return;}
     var allDays={};
     var allWater={};
+    var _dayPfx="ft4"+_pfx()+"_",_dayKeyLen=_dayPfx.length+10,_waterPfx="ft4"+_pfx()+"_water_";
     for(var i=0;i<localStorage.length;i++){
       var k=localStorage.key(i);
-      if(k&&k.indexOf("ft4_")===0&&k.length===14){
+      if(k&&k.indexOf(_dayPfx)===0&&k.length===_dayKeyLen){
         try{
           var val=JSON.parse(localStorage.getItem(k));
-          allDays[k.replace("ft4_","")]=JSON.parse(JSON.stringify(val));
+          allDays[k.slice(_dayPfx.length)]=JSON.parse(JSON.stringify(val));
         }catch(e){}
       }
-      if(k&&k.indexOf("ft4_water_")===0){
+      if(k&&k.indexOf(_waterPfx)===0){
         try{
           var wval=JSON.parse(localStorage.getItem(k));
-          allWater[k.replace("ft4_water_","")]=JSON.parse(JSON.stringify(wval));
+          allWater[k.slice(_waterPfx.length)]=JSON.parse(JSON.stringify(wval));
         }catch(e){}
       }
     }
     // Load existing water from Firebase first, merge with local
     var existingWater={};
     try{
-      var existRef=window._fbDoc(window._fbdb,"users","thiago");
+      var existRef=window._fbDoc(window._fbdb,"users",PROFILE||"thiago");
       var existSnap=await window._fbGetDoc(existRef);
       if(existSnap.exists()&&existSnap.data().water){
         existingWater=existSnap.data().water;
@@ -695,7 +800,7 @@ async function saveToFirebase(){
       history:JSON.parse(JSON.stringify(getHistory())),
       updatedAt:new Date().toISOString()
     };
-    var ref=window._fbDoc(window._fbdb,"users","thiago");
+    var ref=window._fbDoc(window._fbdb,"users",PROFILE||"thiago");
     await window._fbSetDoc(ref,data);
     setSyncStatus(false);
   }catch(e){
@@ -708,20 +813,20 @@ async function loadFromFirebase(){
   try{
     await waitForFirebase();
     if(!window._fbReady)return false;
-    var ref=window._fbDoc(window._fbdb,"users","thiago");
+    var ref=window._fbDoc(window._fbdb,"users",PROFILE||"thiago");
     var snap=await window._fbGetDoc(ref);
     if(!snap.exists())return false;
     var data=snap.data();
     if(data.days){
       Object.keys(data.days).forEach(function(dateStr){
         var existing={};
-        try{existing=JSON.parse(localStorage.getItem("ft4_"+dateStr)||"{}");}catch(e){}
+        try{existing=JSON.parse(localStorage.getItem("ft4"+_pfx()+"_"+dateStr)||"{}");}catch(e){}
         var fbDay=data.days[dateStr];
         if(!existing.savedAt||(fbDay&&fbDay.savedAt&&fbDay.savedAt>existing.savedAt)){
-          localStorage.setItem("ft4_"+dateStr,JSON.stringify(fbDay));
+          localStorage.setItem("ft4"+_pfx()+"_"+dateStr,JSON.stringify(fbDay));
           // Restore water from embedded waterLog
           if(fbDay&&fbDay.waterLog&&fbDay.waterLog.length>0){
-            localStorage.setItem("ft4_water_"+dateStr,JSON.stringify(fbDay.waterLog));
+            localStorage.setItem("ft4"+_pfx()+"_water_"+dateStr,JSON.stringify(fbDay.waterLog));
           }
         }
       });
@@ -775,7 +880,7 @@ function addPhoto(inp){
   reader.onload=function(ev){
     var note=prompt("Nota para esta foto (opcional):")||"";
     var photos=getPhotos();photos.push({src:ev.target.result,date:todayKey(),note:note});
-    try{localStorage.setItem("ft4_photos",JSON.stringify(photos));}catch(e){alert("Foto muito grande.");}
+    try{localStorage.setItem("ft4"+_pfx()+"_photos",JSON.stringify(photos));}catch(e){alert("Foto muito grande.");}
     render();
   };
   reader.readAsDataURL(file);
@@ -788,10 +893,10 @@ function openEditDay(dateStr){
   _ED=dateStr;
   _EACT=getCustomActivity(dateStr);
   try{
-    var s=localStorage.getItem("ft4_"+dateStr);
+    var s=localStorage.getItem("ft4"+_pfx()+"_"+dateStr);
     if(s){var d=JSON.parse(s);_EC=JSON.parse(JSON.stringify(d.checked||{}));_EN=d.notes||"";_ESS=d.sleepStart||"";_ESE=d.sleepEnd||"";_ESQ=d.sleepQuality||"";_ER=d.readingMinutes||0;_ESO=JSON.parse(JSON.stringify(d.selectedOptions||{}));}
     else{_EC={};_EN="";_ESS="";_ESE="";_ESQ="";_ER=0;_ESO={};}
-    var wl=localStorage.getItem("ft4_water_"+dateStr);
+    var wl=localStorage.getItem("ft4"+_pfx()+"_water_"+dateStr);
     _EW=wl?JSON.parse(wl).reduce(function(a,b){return a+b.ml;},0):0;
   }catch(e){_EC={};_EN="";_EW=0;_ER=0;}
 
@@ -847,7 +952,7 @@ function openEditDay(dateStr){
 
   // Custom meals for this date
   var custMealsEdit={};
-  try{custMealsEdit=JSON.parse(localStorage.getItem("ft4_custmeal_"+dateStr)||"{}");}catch(e){}
+  try{custMealsEdit=JSON.parse(localStorage.getItem("ft4"+_pfx()+"_custmeal_"+dateStr)||"{}");}catch(e){}
   if(Object.keys(custMealsEdit).length>0){
     html+='<div style="margin-bottom:16px"><div style="font-size:10px;font-weight:700;color:#3d8fff;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">✏️ Refeições personalizadas</div>';
     Object.keys(custMealsEdit).forEach(function(slotId){
@@ -861,7 +966,7 @@ function openEditDay(dateStr){
 
   // Habits
   html+='<div style="margin-bottom:16px"><div style="font-size:10px;font-weight:700;color:#4a5568;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">✅ Hábitos</div>';
-  [{id:"creatina",label:"💊 Creatina 5g"},{id:"treino_ok",label:"💪 Treino completo"},{id:"sono_ok",label:"😴 Dormi bem"}].forEach(function(item){
+  (PROFILE==="ise"?[{id:"treino_ok",label:"🤸 Alongamento feito"},{id:"sono_ok",label:"😴 Dormi bem"}]:[{id:"creatina",label:"💊 Creatina 5g"},{id:"treino_ok",label:"💪 Treino completo"},{id:"sono_ok",label:"😴 Dormi bem"}]).forEach(function(item){
     var done=!!_EC[item.id];
     html+='<div onclick="eToggle(\''+item.id+'\')" style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #ffffff0f;cursor:pointer">';
     html+=eChk(item.id);
@@ -920,14 +1025,14 @@ function closeEditDay(){document.getElementById("edit-day-modal").classList.add(
 function saveEditDay(){
   var notes2=(document.getElementById("en-inp")||{value:_EN}).value;
   var act2=(document.getElementById("eact-inp")||{value:_EACT}).value.trim();
-  try{ if(act2) localStorage.setItem("ft4_activity_"+_ED,act2); else localStorage.removeItem("ft4_activity_"+_ED); }catch(e){}
+  try{ if(act2) localStorage.setItem("ft4"+_pfx()+"_activity_"+_ED,act2); else localStorage.removeItem("ft4"+_pfx()+"_activity_"+_ED); }catch(e){}
   var water2=parseInt((document.getElementById("ew-inp")||{value:_EW}).value)||_EW;
   var read2=parseInt((document.getElementById("er-inp")||{value:_ER}).value)||_ER;
   try{
-    var existing={};try{existing=JSON.parse(localStorage.getItem("ft4_"+_ED)||"{}");}catch(e){}
+    var existing={};try{existing=JSON.parse(localStorage.getItem("ft4"+_pfx()+"_"+_ED)||"{}");}catch(e){}
     existing.checked=_EC;existing.notes=notes2;existing.sleepStart=_ESS;existing.sleepEnd=_ESE;existing.sleepQuality=_ESQ;existing.readingMinutes=read2;existing.selectedOptions=_ESO;existing.savedAt=new Date().toISOString();
-    localStorage.setItem("ft4_"+_ED,JSON.stringify(existing));
-    if(water2>0)localStorage.setItem("ft4_water_"+_ED,JSON.stringify([{ml:water2,time:"editado"}]));
+    localStorage.setItem("ft4"+_pfx()+"_"+_ED,JSON.stringify(existing));
+    if(water2>0)localStorage.setItem("ft4"+_pfx()+"_water_"+_ED,JSON.stringify([{ml:water2,time:"editado"}]));
     var hist=getHistory(),d3=new Date(_ED+"T12:00:00"),dw3=d3.getDay(),w3=WORKOUTS[dw3];
     var exIds3=w3?w3.exercises.map(function(e){return e.id;}):[]; 
     var doneEx3=exIds3.filter(function(id){return!!_EC[id];}).length;
@@ -1098,16 +1203,23 @@ function renderHoje(){
   var water=getTotalWater(),waterPct=Math.min(100,Math.round(water/WATER_GOAL*100));
   var waterLog=getWaterLog();
   var readPct=readingGoal>0?Math.min(100,Math.round(readingMinutes/readingGoal*100)):0;
-  var checkItems=[{id:"creatina",label:"💊 Tomei 5g de creatina"},{id:"sono_ok",label:"😴 Dormi bem esta noite"}];
+  var checkItems=PROFILE==="ise"?[{id:"sono_ok",label:"😴 Dormi bem esta noite"}]:[{id:"creatina",label:"💊 Tomei 5g de creatina"},{id:"sono_ok",label:"😴 Dormi bem esta noite"}];
   if(w)checkItems.unshift({id:"treino_ok",label:"💪 Fiz o treino ("+w.name+")"});
   if(isRunDay())checkItems.push({id:"run",label:"🏃 Fiz a corrida de hoje"});
   var sleepH=0;if(sleepStart&&sleepEnd){var sp=sleepStart.split(":"),ep=sleepEnd.split(":");var sh=parseInt(sp[0])*60+parseInt(sp[1]),eh=parseInt(ep[0])*60+parseInt(ep[1]);if(eh<sh)eh+=1440;sleepH=(eh-sh)/60;}
   var wDone=!!(checked["treino_ok"]||(w&&w.exercises.some(function(ex){return checked[ex.id];})));
 
   var html='<div style="display:flex;flex-direction:column;gap:12px">';
+  // Frase do dia — mesmo banco de frases (incluindo provérbios) usado no
+  // dashboard da Flow Sales, uma frase por dia sorteada por perfil.
+  (function(){
+    var dq=getDailyQuote().split("||");
+    var ring=PROFILE==="ise"?"#f472b6":"#00e676";
+    html+='<div class="card fu" style="border-color:'+ring+'55;background:linear-gradient(135deg,'+ring+'18 0%,var(--card) 65%);box-shadow:0 0 0 1px '+ring+'30,0 0 18px '+ring+'25"><div class="card-p"><div style="font-size:10px;font-weight:700;color:'+ring+';text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">⭐ Frase do dia</div><div style="font-size:13px;line-height:1.7;font-style:italic;color:#fff">&ldquo;'+dq[0]+'&rdquo;</div>'+(dq[1]?'<div style="font-size:11px;color:var(--muted);margin-top:6px;font-weight:600">'+dq[1]+'</div>':'')+'</div></div>';
+  })();
   // Rings
   html+='<div class="card fu card-p" style="display:flex;gap:14px;align-items:center">'+ring(pctEx,54,"#ff6535","treino")+ring(pctMeals,54,"#00e676","refeições")+'<div style="flex:1"><div class="sec-lbl">Meta diária</div>';
-  [["3.100 kcal","calorias","#ff6535"],["160g","proteína","#3d8fff"],["330g","carbo","#ff6535"],["75g","gordura","#f59e0b"]].forEach(function(v){html+='<div style="display:flex;justify-content:space-between;padding:3px 0"><span style="font-size:11px;color:var(--muted)">'+v[1]+'</span><span style="font-size:12px;font-weight:700;color:'+v[2]+'">'+v[0]+'</span></div>';});
+  (PROFILE==="ise"?[["Sem glúten","dieta","#f472b6"],["Baixo","carboidrato","#f472b6"]]:[["3.100 kcal","calorias","#ff6535"],["160g","proteína","#3d8fff"],["330g","carbo","#ff6535"],["75g","gordura","#f59e0b"]]).forEach(function(v){html+='<div style="display:flex;justify-content:space-between;padding:3px 0"><span style="font-size:11px;color:var(--muted)">'+v[1]+'</span><span style="font-size:12px;font-weight:700;color:'+v[2]+'">'+v[0]+'</span></div>';});
   html+='</div></div>';
 
   // Habits card
@@ -1210,7 +1322,7 @@ function renderExCard(ex,interactive){
   return html;
 }
 function getCustomActivity(dateStr){
-  try{return localStorage.getItem("ft4_activity_"+dateStr)||"";}catch(e){return"";}
+  try{return localStorage.getItem("ft4"+_pfx()+"_activity_"+dateStr)||"";}catch(e){return"";}
 }
 function setCustomActivityToday(){
   var cur=getCustomActivity(todayKey());
@@ -1218,13 +1330,13 @@ function setCustomActivityToday(){
   if(v===null)return;
   v=v.trim();
   try{
-    if(v)localStorage.setItem("ft4_activity_"+todayKey(),v);
-    else localStorage.removeItem("ft4_activity_"+todayKey());
+    if(v)localStorage.setItem("ft4"+_pfx()+"_activity_"+todayKey(),v);
+    else localStorage.removeItem("ft4"+_pfx()+"_activity_"+todayKey());
   }catch(e){}
   render();
 }
 function removeCustomActivityToday(){
-  try{localStorage.removeItem("ft4_activity_"+todayKey());}catch(e){}
+  try{localStorage.removeItem("ft4"+_pfx()+"_activity_"+todayKey());}catch(e){}
   render();
 }
 
@@ -1277,7 +1389,7 @@ function renderTreino(){
 
   // Botões iniciar/finalizar treino + temporizador de sessão (só no dia de hoje)
   if(isViewingToday){
-    var sessionStart=localStorage.getItem("ft4_wsession_"+todayKey());
+    var sessionStart=localStorage.getItem("ft4"+_pfx()+"_wsession_"+todayKey());
     if(sessionStart){
       html+='<div class="card fu1 card-p" style="border-color:var(--gb);background:var(--gd);text-align:center">';
       html+='<div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px">⏱ Treino em andamento</div>';
@@ -1295,25 +1407,56 @@ function renderTreino(){
   return html;
 }
 
+// Perfil da Ise: sem divisão por dia da semana e sem sets/reps. Alongamento
+// vira um checklist normal (reaproveitando chkBox/toggle). Caminhada e
+// elíptico não têm meta do médico, então viram só um campo de minutos que
+// ela mesma preenche no dia.
+function saveIseMin(field,val){
+  var n=parseInt(val,10);if(isNaN(n)||n<0)n=0;
+  if(field==="caminhada")iseCaminhadaMin=n;else iseElipticoMin=n;
+  saveState();scheduleSync();
+}
+function renderTreinoIse(){
+  var dia=WORKOUTS_ISE[dow()];
+  var html='<div style="display:flex;flex-direction:column;gap:10px">';
+  html+='<div class="card fu card-p"><div style="font-family:var(--ff);font-size:22px;font-weight:900;color:#f472b6">🤸 '+dia.name+'</div><div style="font-size:12px;color:var(--muted);margin-top:3px">Livre, sem contagem de séries — marque conforme for fazendo.</div></div>';
+  html+='<div class="card fu1 card-p">';
+  dia.exercises.forEach(function(ex,i){
+    html+='<div class="list-item" style="align-items:flex-start'+(i<dia.exercises.length-1?';border-bottom:1px solid var(--border)':'')+'">'+chkBox(ex.id,24);
+    html+='<div style="flex:1;padding-top:1px"><div style="font-size:14px;font-weight:700;color:'+(checked[ex.id]?"var(--green)":"#fff")+'">'+ex.name+'</div>';
+    html+='<div style="font-size:12px;color:var(--muted);margin-top:2px;line-height:1.5">'+ex.execution+'</div>';
+    html+='<a href="'+ex.video+'" target="_blank" style="font-size:11px;color:#f472b6;font-weight:700;text-decoration:none;display:inline-block;margin-top:4px">▶ ver vídeo</a></div></div>';
+  });
+  html+='</div>';
+  [["caminhada","🚶","Caminhada","Ritmo confortável. Sem meta fixa (o médico não passou tempo) — registre quantos minutos você fez hoje.",iseCaminhadaMin],
+   ["eliptico","🚴","Elíptico","Baixo impacto. Mesma ideia: registre os minutos, sem meta fixa.",iseElipticoMin]].forEach(function(a){
+    html+='<div class="card fu2 card-p"><div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span style="font-size:18px">'+a[1]+'</span><div style="font-family:var(--ff);font-size:17px;font-weight:800;color:#fff">'+a[2]+'</div></div>';
+    html+='<div style="font-size:12px;color:var(--muted);margin-bottom:10px;line-height:1.5">'+a[3]+'</div>';
+    html+='<div style="display:flex;align-items:center;gap:10px"><input class="sleep-inp" type="number" min="0" max="300" style="width:80px;font-size:20px;font-weight:800;color:#f472b6" value="'+(a[4]||"")+'" placeholder="0" onchange="saveIseMin(\''+a[0]+'\',this.value);render()"/><span style="font-size:13px;color:var(--muted)">minutos hoje</span></div></div>';
+  });
+  html+='</div>';
+  return html;
+}
+
 function startWorkoutSession(){
-  localStorage.setItem("ft4_wsession_"+todayKey(), String(Date.now()));
+  localStorage.setItem("ft4"+_pfx()+"_wsession_"+todayKey(), String(Date.now()));
   render();
   clearInterval(workoutSessionInt);
   workoutSessionInt=setInterval(updateWorkoutSessionTimer,1000);
   updateWorkoutSessionTimer();
 }
 function updateWorkoutSessionTimer(){
-  var start=localStorage.getItem("ft4_wsession_"+todayKey());
+  var start=localStorage.getItem("ft4"+_pfx()+"_wsession_"+todayKey());
   if(!start){clearInterval(workoutSessionInt);return;}
   var el=Math.floor((Date.now()-parseInt(start))/1000);
   var elDiv=document.getElementById("workout-session-timer");
   if(elDiv)elDiv.textContent=fmt2(Math.floor(el/60))+":"+fmt2(el%60);
 }
 function finishWorkoutSession(){
-  var start=localStorage.getItem("ft4_wsession_"+todayKey());
+  var start=localStorage.getItem("ft4"+_pfx()+"_wsession_"+todayKey());
   if(!start)return;
   var mins=Math.round((Date.now()-parseInt(start))/60000);
-  localStorage.removeItem("ft4_wsession_"+todayKey());
+  localStorage.removeItem("ft4"+_pfx()+"_wsession_"+todayKey());
   clearInterval(workoutSessionInt);
   try{
     var hist=getHistory();
@@ -1381,7 +1524,8 @@ function renderMealSlot(slot){
 function renderNutricao(){
   var doneMeals=MEAL_SLOTS.filter(function(s){return!!checked[s.id];}).length,pct=Math.round(doneMeals/MEAL_SLOTS.length*100);
   var html='<div style="display:flex;flex-direction:column;gap:10px">';
-  html+='<div class="card fu card-p" style="border-color:var(--gb)"><div style="font-family:var(--ff);font-size:20px;font-weight:800;color:var(--green);margin-bottom:10px">🍽️ Plano com variações</div><div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">'+chip("3.100 kcal","chip-o")+chip("160g proteína","chip-b")+chip("330g carbo","chip-o")+chip("75g gordura","chip-y")+'</div>'+pbar(pct,"linear-gradient(90deg,var(--green),var(--blue))")+'<div style="font-size:11px;color:var(--muted);margin-top:6px">'+doneMeals+' de '+MEAL_SLOTS.length+' refeições · Toque para escolher a opção do dia</div></div>';
+  var _dietChips=PROFILE==="ise"?(chip("Sem glúten","chip-pk")+chip("Baixo carboidrato","chip-pk")+chip("Sem carne vermelha/frituras/processados","chip-o")):(chip("3.100 kcal","chip-o")+chip("160g proteína","chip-b")+chip("330g carbo","chip-o")+chip("75g gordura","chip-y"));
+  html+='<div class="card fu card-p" style="border-color:var(--gb)"><div style="font-family:var(--ff);font-size:20px;font-weight:800;color:var(--green);margin-bottom:10px">🍽️ Plano com variações</div><div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">'+_dietChips+'</div>'+pbar(pct,"linear-gradient(90deg,var(--green),var(--blue))")+'<div style="font-size:11px;color:var(--muted);margin-top:6px">'+doneMeals+' de '+MEAL_SLOTS.length+' refeições · Toque para escolher a opção do dia</div></div>';
   MEAL_SLOTS.forEach(function(slot){html+=renderMealSlot(slot);});
   // Custom foods for today
   var customs = getCustomFoods();
@@ -1415,7 +1559,7 @@ function renderNutricao(){
   }
   html += '</div>';
 
-  html+='<div class="card card-p"><div style="font-family:var(--ff);font-size:18px;font-weight:800;margin-bottom:10px">💊 Suplementação</div><div style="display:flex;align-items:flex-start;gap:11px">'+chkBox("creatina")+'<div><div style="font-size:14px;font-weight:600;color:var(--text)">Creatina Monohidratada · 5g</div><div style="font-size:12px;color:var(--muted);margin-top:2px">Qualquer horário · todos os dias, inclusive descanso</div></div></div></div>';
+  if(PROFILE!=="ise")html+='<div class="card card-p"><div style="font-family:var(--ff);font-size:18px;font-weight:800;margin-bottom:10px">💊 Suplementação</div><div style="display:flex;align-items:flex-start;gap:11px">'+chkBox("creatina")+'<div><div style="font-size:14px;font-weight:600;color:var(--text)">Creatina Monohidratada · 5g</div><div style="font-size:12px;color:var(--muted);margin-top:2px">Qualquer horário · todos os dias, inclusive descanso</div></div></div></div>';
   html+='</div>';
   return html;
 }
@@ -1664,7 +1808,7 @@ async function calcCustomFood(){
 
 function saveCustomFood(){
   if(!_customFoodResult)return;
-  var key = "ft4_custom_"+todayKey();
+  var key = "ft4"+_pfx()+"_custom_"+todayKey();
   var customs = [];
   try{customs = JSON.parse(localStorage.getItem(key)||"[]");}catch(e){}
   customs.push({
@@ -1683,11 +1827,11 @@ function saveCustomFood(){
 }
 
 function getCustomFoods(){
-  try{return JSON.parse(localStorage.getItem("ft4_custom_"+todayKey())||"[]");}catch(e){return[];}
+  try{return JSON.parse(localStorage.getItem("ft4"+_pfx()+"_custom_"+todayKey())||"[]");}catch(e){return[];}
 }
 
 function removeCustomFood(idx){
-  var key = "ft4_custom_"+todayKey();
+  var key = "ft4"+_pfx()+"_custom_"+todayKey();
   var customs = getCustomFoods();
   customs.splice(idx,1);
   localStorage.setItem(key, JSON.stringify(customs));
@@ -1874,7 +2018,7 @@ async function cmCalc(){
 function cmSave(){
   if(!_cmResult) return;
   // Save as custom option for this slot
-  var key = "ft4_custmeal_"+todayKey();
+  var key = "ft4"+_pfx()+"_custmeal_"+todayKey();
   var customs = {};
   try{ customs = JSON.parse(localStorage.getItem(key)||"{}"); }catch(e){}
   customs[_cmSlotId] = {
@@ -1895,14 +2039,14 @@ function cmSave(){
 }
 
 function getCustomMeals(){
-  try{ return JSON.parse(localStorage.getItem("ft4_custmeal_"+todayKey())||"{}"); }catch(e){ return {}; }
+  try{ return JSON.parse(localStorage.getItem("ft4"+_pfx()+"_custmeal_"+todayKey())||"{}"); }catch(e){ return {}; }
 }
 
 function render(){
   var app=document.getElementById("app");if(!app)return;
   var html="";
   if(currentTab==="hoje")html=renderHoje();
-  else if(currentTab==="treino")html=renderTreino();
+  else if(currentTab==="treino")html=(PROFILE==="ise"?renderTreinoIse():renderTreino());
   else if(currentTab==="nutricao")html=renderNutricao();
   else if(currentTab==="corrida")html=renderCorrida();
   else html=renderProgresso();
@@ -1967,12 +2111,16 @@ async function syncFromNotion(){
 }
 
 function enterApp(){
+  if(!_selectedProfile)return;
+  PROFILE=_selectedProfile;
+  localStorage.setItem("ft4_active_profile",PROFILE);
+  _applyProfileData();
   document.getElementById("login-screen").style.display="none";
   document.getElementById("main-app").classList.add("visible");
   localStorage.setItem("ft4_seen_login","1");
   loadState();
   initHeader();updateHistory();render();
-  if(localStorage.getItem("ft4_wsession_"+todayKey())){
+  if(localStorage.getItem("ft4"+_pfx()+"_wsession_"+todayKey())){
     clearInterval(workoutSessionInt);
     workoutSessionInt=setInterval(updateWorkoutSessionTimer,1000);
   }
@@ -1994,6 +2142,7 @@ function enterApp(){
 }
 
 loadState();
+if(PROFILE)pickProfile(PROFILE);
 if(localStorage.getItem("ft4_seen_login")){
   // Sync in background, then show login screen
   syncFromNotion();
