@@ -1402,15 +1402,19 @@ function renderTreino(){
   if(isViewingToday)html+=ring(pctEx,50,viewW.color);
   html+='</div>';
 
-  // Botões iniciar/finalizar treino + temporizador de sessão (só no dia de hoje)
+  // Botões iniciar/pausar/finalizar treino + temporizador de sessão (só no dia de hoje)
   if(isViewingToday){
-    var sessionStart=localStorage.getItem("ft4"+_pfx()+"_wsession_"+todayKey());
-    if(sessionStart){
-      html+='<div class="card fu1 card-p" style="border-color:var(--gb);background:var(--gd);text-align:center">';
-      html+='<div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px">⏱ Treino em andamento</div>';
-      html+='<div id="workout-session-timer" style="font-family:var(--ff);font-size:36px;font-weight:900;color:var(--green)">00:00</div>';
-      html+='<button onclick="finishWorkoutSession()" style="margin-top:10px;width:100%;padding:13px;background:var(--orange);border-radius:12px;color:#fff;font-size:14px;font-weight:800;border:none;cursor:pointer">⏹ Finalizar treino</button>';
-      html+='</div>';
+    var session=_parseWSession(localStorage.getItem("ft4"+_pfx()+"_wsession_"+todayKey()));
+    if(session){
+      var isPaused=!session.running;
+      var elSec=_wsessionElapsedSec(session);
+      html+='<div class="card fu1 card-p" style="border-color:'+(isPaused?"var(--border)":"var(--gb)")+';background:'+(isPaused?"#ffffff08":"var(--gd)")+';text-align:center">';
+      html+='<div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px">'+(isPaused?"⏸ Treino pausado":"⏱ Treino em andamento")+'</div>';
+      html+='<div id="workout-session-timer" style="font-family:var(--ff);font-size:36px;font-weight:900;color:'+(isPaused?"var(--muted)":"var(--green)")+'">'+fmt2(Math.floor(elSec/60))+':'+fmt2(elSec%60)+'</div>';
+      html+='<div style="display:flex;gap:8px;margin-top:10px">';
+      html+=isPaused?'<button onclick="resumeWorkoutSession()" style="flex:1;padding:13px;background:var(--green);border-radius:12px;color:#000;font-size:14px;font-weight:800;border:none;cursor:pointer">▶ Retomar</button>':'<button onclick="pauseWorkoutSession()" style="flex:1;padding:13px;background:#ffffff10;border:1px solid var(--border);border-radius:12px;color:#fff;font-size:14px;font-weight:800;cursor:pointer">⏸ Pausar</button>';
+      html+='<button onclick="finishWorkoutSession()" style="flex:1;padding:13px;background:var(--orange);border-radius:12px;color:#fff;font-size:14px;font-weight:800;border:none;cursor:pointer">⏹ Finalizar</button>';
+      html+='</div></div>';
     }else{
       html+='<button onclick="startWorkoutSession()" style="width:100%;padding:14px;background:var(--green);border-radius:14px;font-family:var(--ff);font-size:16px;font-weight:900;color:#000;border:none;cursor:pointer">▶ Iniciar treino</button>';
     }
@@ -1453,25 +1457,62 @@ function renderTreinoIse(){
   return html;
 }
 
+// Sessão de treino guarda {startTs, accumSec, running} em vez de só um timestamp
+// de início, pra suportar pausa: accumSec acumula o tempo já contado antes da
+// pausa atual, e só soma o tempo desde startTs enquanto running=true.
+function _parseWSession(raw){
+  if(!raw)return null;
+  try{
+    var s=JSON.parse(raw);
+    if(s&&typeof s==="object"&&typeof s.startTs==="number")return s;
+  }catch(e){}
+  // Formato antigo (só o timestamp cru, sem pausa) — migra pro novo formato.
+  var n=parseInt(raw,10);
+  return isNaN(n)?null:{startTs:n,accumSec:0,running:true};
+}
+function _wsessionElapsedSec(s){
+  if(!s)return 0;
+  return s.accumSec+(s.running?Math.floor((Date.now()-s.startTs)/1000):0);
+}
 function startWorkoutSession(){
-  localStorage.setItem("ft4"+_pfx()+"_wsession_"+todayKey(), String(Date.now()));
+  localStorage.setItem("ft4"+_pfx()+"_wsession_"+todayKey(), JSON.stringify({startTs:Date.now(),accumSec:0,running:true}));
+  render();
+  clearInterval(workoutSessionInt);
+  workoutSessionInt=setInterval(updateWorkoutSessionTimer,1000);
+  updateWorkoutSessionTimer();
+}
+function pauseWorkoutSession(){
+  var key="ft4"+_pfx()+"_wsession_"+todayKey();
+  var s=_parseWSession(localStorage.getItem(key));if(!s||!s.running)return;
+  s.accumSec=_wsessionElapsedSec(s);
+  s.running=false;
+  localStorage.setItem(key,JSON.stringify(s));
+  clearInterval(workoutSessionInt);
+  render();
+}
+function resumeWorkoutSession(){
+  var key="ft4"+_pfx()+"_wsession_"+todayKey();
+  var s=_parseWSession(localStorage.getItem(key));if(!s||s.running)return;
+  s.startTs=Date.now();s.running=true;
+  localStorage.setItem(key,JSON.stringify(s));
   render();
   clearInterval(workoutSessionInt);
   workoutSessionInt=setInterval(updateWorkoutSessionTimer,1000);
   updateWorkoutSessionTimer();
 }
 function updateWorkoutSessionTimer(){
-  var start=localStorage.getItem("ft4"+_pfx()+"_wsession_"+todayKey());
-  if(!start){clearInterval(workoutSessionInt);return;}
-  var el=Math.floor((Date.now()-parseInt(start))/1000);
+  var s=_parseWSession(localStorage.getItem("ft4"+_pfx()+"_wsession_"+todayKey()));
+  if(!s){clearInterval(workoutSessionInt);return;}
+  var el=_wsessionElapsedSec(s);
   var elDiv=document.getElementById("workout-session-timer");
   if(elDiv)elDiv.textContent=fmt2(Math.floor(el/60))+":"+fmt2(el%60);
 }
 function finishWorkoutSession(){
-  var start=localStorage.getItem("ft4"+_pfx()+"_wsession_"+todayKey());
-  if(!start)return;
-  var mins=Math.round((Date.now()-parseInt(start))/60000);
-  localStorage.removeItem("ft4"+_pfx()+"_wsession_"+todayKey());
+  var key="ft4"+_pfx()+"_wsession_"+todayKey();
+  var s=_parseWSession(localStorage.getItem(key));
+  if(!s)return;
+  var mins=Math.round(_wsessionElapsedSec(s)/60);
+  localStorage.removeItem(key);
   clearInterval(workoutSessionInt);
   try{
     var hist=getHistory();
