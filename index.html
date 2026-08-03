@@ -684,11 +684,12 @@ var runPauseStart=null,runPaused=false,runWatchId=null,runTimerInt=null;
 var runSummaryCoords=[];
 var runLayerSat,runLayerHyb,runLayerStr,runLabels;
 var runActivityType="corrida",runActive=false,_wakeLock=null;
+var _TREADMILL_SVG='<svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><path d="M2 17h12l4-3"/><circle cx="5" cy="19" r="1.3"/><circle cx="13" cy="19" r="1.3"/><path d="M18 14V5"/><path d="M15 5h6"/></svg>';
 var ACTIVITY_TYPES=[
   {id:"corrida",icon:"🏃",label:"Corrida",calKm:54},
   {id:"caminhada",icon:"🚶",label:"Caminhada",calKm:38},
   {id:"bicicleta",icon:"🚴",label:"Bicicleta",calKm:28},
-  {id:"esteira",icon:"🏠",label:"Esteira",calKm:50}
+  {id:"esteira",icon:_TREADMILL_SVG,label:"Esteira",calKm:50}
 ];
 function _actType(id){return ACTIVITY_TYPES.filter(function(a){return a.id===id;})[0]||ACTIVITY_TYPES[0];}
 function _setPendingActivityType(id){runActivityType=id;render();}
@@ -1137,7 +1138,7 @@ function startRun(type){
   runActivityType=type||runActivityType||"corrida";
   runActive=true;_requestWakeLock();
   var at=_actType(runActivityType);
-  var typeBadge=document.getElementById("run-type-badge");if(typeBadge)typeBadge.textContent=at.icon+" "+at.label;
+  var typeBadge=document.getElementById("run-type-badge");if(typeBadge)typeBadge.innerHTML=at.icon+" "+at.label;
   var screen=document.getElementById("run-screen");
   screen.style.visibility="visible";
   screen.style.pointerEvents="auto";
@@ -1244,7 +1245,7 @@ function _handleRunMedia(inp){
 function _rsmRender(){
   var pr=window._pendingRun;if(!pr)return;
   var at=_actType(pr.activityType);
-  document.getElementById("rsm-title").textContent=at.icon+" "+at.label+" finalizada!";
+  document.getElementById("rsm-title").innerHTML=at.icon+" "+at.label+" finalizada!";
   document.getElementById("rsm-stats").innerHTML=
     "<div style='background:var(--card);border-radius:10px;padding:12px'><div style='font-family:var(--ff);font-size:24px;font-weight:900;color:var(--green)'>"+pr.dist.toFixed(2).replace(".",",")+"km</div><div style='font-size:13px;color:var(--muted);margin-top:3px'>distância</div></div>"+
     "<div style='background:var(--card);border-radius:10px;padding:12px'><div style='font-family:var(--ff);font-size:24px;font-weight:900;color:#fff'>"+fmt2(Math.floor(pr.secs/60))+":"+fmt2(pr.secs%60)+"</div><div style='font-size:13px;color:var(--muted);margin-top:3px'>tempo</div></div>"+
@@ -1298,7 +1299,7 @@ function showRunDetail(runId){
   for(var i=0;i<runs.length;i++){var rid=runs[i].id||("idx"+i);if(rid===runId){r=runs[i];idx=i;break;}}
   if(!r)return;
   var at=_actType(r.activityType);
-  document.getElementById("rdm-title").textContent=at.icon+" "+(r.name||at.label);
+  document.getElementById("rdm-title").innerHTML=at.icon+" "+(r.name||at.label);
   document.getElementById("rdm-pr").style.display=r.isPR?"block":"none";
   document.getElementById("rdm-stats").innerHTML=
     "<div style='background:var(--card);border-radius:10px;padding:12px'><div style='font-family:var(--ff);font-size:24px;font-weight:900;color:var(--green)'>"+r.dist.toFixed(2).replace(".",",")+"km</div><div style='font-size:13px;color:var(--muted);margin-top:3px'>distância</div></div>"+
