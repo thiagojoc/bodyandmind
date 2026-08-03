@@ -377,7 +377,10 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
     <div id="rsm-type-row" style="display:flex;gap:6px;margin-bottom:14px"></div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px" id="rsm-stats"></div>
     <div id="rsm-times" style="font-size:12px;color:var(--muted);margin-bottom:14px;text-align:center"></div>
-    <div id="rsm-map" style="height:180px;border-radius:12px;overflow:hidden;margin-bottom:14px"></div>
+    <div style="position:relative;margin-bottom:14px">
+      <div id="rsm-map" style="height:180px;border-radius:12px;overflow:hidden"></div>
+      <button onclick="openFullscreenMap((window._pendingRun&&window._pendingRun.coords)||[],'Percurso')" style="position:absolute;top:8px;right:8px;background:#000000aa;border:1px solid #ffffff30;border-radius:8px;color:#fff;font-size:11px;font-weight:700;padding:6px 10px;cursor:pointer;backdrop-filter:blur(4px)">⤢ Ver percurso</button>
+    </div>
     <div style="font-size:13px;color:var(--muted);margin-bottom:8px">📝 Nota (opcional)</div>
     <textarea class="ta" id="rsm-note" rows="2" placeholder="Como foi? O que sentiu?"></textarea>
     <div style="font-size:13px;color:var(--muted);margin:12px 0 8px">📷 Foto ou vídeo (opcional)</div>
@@ -396,10 +399,26 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px" id="rdm-stats"></div>
     <div id="rdm-times" style="font-size:12px;color:var(--muted);margin-bottom:14px;text-align:center"></div>
-    <div id="rdm-map" style="height:180px;border-radius:12px;overflow:hidden;margin-bottom:14px"></div>
+    <div style="position:relative;margin-bottom:14px">
+      <div id="rdm-map" style="height:180px;border-radius:12px;overflow:hidden"></div>
+      <button onclick="openFullscreenMap(window._currentDetailCoords||[],document.getElementById('rdm-title').textContent)" style="position:absolute;top:8px;right:8px;background:#000000aa;border:1px solid #ffffff30;border-radius:8px;color:#fff;font-size:11px;font-weight:700;padding:6px 10px;cursor:pointer;backdrop-filter:blur(4px)">⤢ Ver percurso</button>
+    </div>
     <div id="rdm-media"></div>
     <div id="rdm-note" style="font-size:14px;color:var(--text);line-height:1.6;margin-bottom:14px"></div>
     <button style="width:100%;padding:12px;background:#ffffff08;border-radius:10px;color:var(--muted);font-size:13px;font-weight:600" onclick="closeModal('run-detail-modal')">Fechar</button>
+    <button style="width:100%;margin-top:8px;padding:12px;background:rgba(255,101,53,.12);border:1px solid rgba(255,101,53,.35);border-radius:10px;color:var(--orange);font-size:13px;font-weight:700;cursor:pointer" onclick="deleteRunFromDetail()">🗑 Excluir atividade</button>
+  </div>
+</div>
+<div class="modal-overlay hidden" id="fs-map-modal" style="z-index:250;align-items:stretch;justify-content:stretch">
+  <div style="background:var(--bg);width:100%;height:100%;display:flex;flex-direction:column">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 16px;padding-top:max(14px,env(safe-area-inset-top,0px))">
+      <div class="modal-title" id="fsm-title" style="margin:0">Percurso</div>
+      <button onclick="clearInterval(_flyoverInt);closeModal('fs-map-modal')" style="background:#ffffff10;border:none;border-radius:10px;color:#fff;padding:8px 12px;font-size:16px;cursor:pointer;flex-shrink:0">✕</button>
+    </div>
+    <div id="fsm-map" style="flex:1"></div>
+    <div style="padding:14px 16px;padding-bottom:calc(14px + env(safe-area-inset-bottom,0px))">
+      <button onclick="_playRouteAnimation('fsm-map',window._fsmCoords)" style="width:100%;padding:14px;background:var(--green);border-radius:14px;font-size:15px;font-weight:800;color:#000;border:none;cursor:pointer">▶ Reproduzir percurso</button>
+    </div>
   </div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
@@ -1294,10 +1313,13 @@ function saveRun(){
   checked["run"]=true;saveState();scheduleSync();closeModal("run-summary-modal");render();
 }
 function discardRun(){window._pendingRunMedia=null;closeModal("run-summary-modal");render();}
+var _currentDetailRunId=null;
 function showRunDetail(runId){
   var runs=getRuns(),idx=-1,r=null;
   for(var i=0;i<runs.length;i++){var rid=runs[i].id||("idx"+i);if(rid===runId){r=runs[i];idx=i;break;}}
   if(!r)return;
+  _currentDetailRunId=runId;
+  window._currentDetailCoords=r.coords||[];
   var at=_actType(r.activityType);
   document.getElementById("rdm-title").innerHTML=at.icon+" "+(r.name||at.label);
   document.getElementById("rdm-pr").style.display=r.isPR?"block":"none";
@@ -1312,6 +1334,47 @@ function showRunDetail(runId){
   document.getElementById("rdm-note").textContent=r.note||"";
   openModal("run-detail-modal");
   setTimeout(function(){_drawRouteMap("rdm-map",r.coords);},350);
+}
+function deleteRunFromDetail(){
+  if(!_currentDetailRunId)return;
+  if(!confirm("Excluir essa atividade? Essa ação não pode ser desfeita."))return;
+  var runs=getRuns(),idx=-1;
+  for(var i=0;i<runs.length;i++){var rid=runs[i].id||("idx"+i);if(rid===_currentDetailRunId){idx=i;break;}}
+  if(idx<0)return;
+  var removed=runs.splice(idx,1)[0];
+  saveRuns(runs);
+  if(removed&&removed.id){
+    try{var media=_getRunMedia();delete media[removed.id];localStorage.setItem("ft4"+_pfx()+"_runmedia",JSON.stringify(media));}catch(e){}
+  }
+  scheduleSync();
+  closeModal("run-detail-modal");
+  render();
+}
+function openFullscreenMap(coords,title){
+  window._fsmCoords=coords||[];
+  document.getElementById("fsm-title").textContent=title||"Percurso";
+  openModal("fs-map-modal");
+  setTimeout(function(){_drawRouteMap("fsm-map",coords);},300);
+}
+var _flyoverInt=null,_flyoverLine=null,_flyoverMarker=null;
+function _playRouteAnimation(mapContainerId,coords){
+  clearInterval(_flyoverInt);
+  if(!coords||coords.length<2)return;
+  var map=_routeMapInstances[mapContainerId];if(!map)return;
+  if(_flyoverLine){try{_flyoverLine.remove();}catch(e){}_flyoverLine=null;}
+  if(_flyoverMarker){try{_flyoverMarker.remove();}catch(e){}_flyoverMarker=null;}
+  _flyoverLine=L.polyline([coords[0]],{color:"#00e676",weight:5,opacity:.95}).addTo(map);
+  var movingIcon=L.divIcon({html:'<div style="width:16px;height:16px;border-radius:50%;background:#00e676;border:3px solid #fff;box-shadow:0 0 0 6px #00e67655"></div>',iconSize:[16,16],iconAnchor:[8,8],className:""});
+  _flyoverMarker=L.marker(coords[0],{icon:movingIcon}).addTo(map);
+  map.setView(coords[0],map.getZoom?map.getZoom():17);
+  var i=0,stepMs=Math.max(16,Math.min(80,Math.round(3000/coords.length)));
+  _flyoverInt=setInterval(function(){
+    i++;
+    if(i>=coords.length){clearInterval(_flyoverInt);return;}
+    _flyoverLine.addLatLng(coords[i]);
+    _flyoverMarker.setLatLng(coords[i]);
+    map.panTo(coords[i]);
+  },stepMs);
 }
 
 // ── RENDER HELPERS ────────────────────────────────────────────────────────────
@@ -1336,6 +1399,8 @@ function renderHoje(){
   if(isRunDay())checkItems.push({id:"run",label:"🏃 Fiz a corrida de hoje"});
   var sleepH=0;if(sleepStart&&sleepEnd){var sp=sleepStart.split(":"),ep=sleepEnd.split(":");var sh=parseInt(sp[0])*60+parseInt(sp[1]),eh=parseInt(ep[0])*60+parseInt(ep[1]);if(eh<sh)eh+=1440;sleepH=(eh-sh)/60;}
   var wDone=!!(checked["treino_ok"]||(w&&w.exercises.some(function(ex){return checked[ex.id];})));
+  var todayHistEntry=getHistory().filter(function(h){return h.date===todayKey();})[0];
+  var treinoMin=todayHistEntry&&todayHistEntry.treinoDuracaoMin;
 
   var html='<div style="display:flex;flex-direction:column;gap:12px">';
   // Frase do dia, mesmo banco de frases (incluindo provérbios) usado no
@@ -1363,7 +1428,7 @@ function renderHoje(){
   html+='</div>';
   // Treino + Agua mini
   html+='<div style="display:flex;gap:8px">';
-  html+='<div style="flex:1;background:#ffffff06;border-radius:10px;padding:10px 12px"><div style="font-size:12px;color:var(--muted);margin-bottom:5px">💪 Treino</div><div style="font-size:13px;font-weight:700;color:'+(wDone?"var(--green)":"var(--muted)")+'">'+(wDone?"✓ Feito":"Pendente")+'</div></div>';
+  html+='<div style="flex:1;background:#ffffff06;border-radius:10px;padding:10px 12px"><div style="font-size:12px;color:var(--muted);margin-bottom:5px">💪 Treino</div><div style="font-size:13px;font-weight:700;color:'+(wDone?"var(--green)":"var(--muted)")+'">'+(wDone?"✓ Feito":"Pendente")+(treinoMin?" · "+treinoMin+" min":"")+'</div></div>';
   html+='<div style="flex:1;background:#ffffff06;border-radius:10px;padding:10px 12px"><div style="font-size:12px;color:var(--muted);margin-bottom:5px">💧 Água</div>';
   html+='<div style="height:4px;background:#ffffff0a;border-radius:99px;overflow:hidden;margin-bottom:4px"><div style="height:100%;width:'+waterPct+'%;background:var(--blue)"></div></div>';
   html+='<div style="font-size:13px;font-weight:700;color:var(--blue)">'+water+'ml</div></div>';
@@ -1860,11 +1925,11 @@ function renderHistorico(hist){
   var html='<div style="display:flex;flex-direction:column;gap:8px">';
   wkKeys.forEach(function(k){
     var days=wks[k],isCur=k===curWk;
-    var totEx=0,dEx=0,totM=0,dM=0,agua=0,creat=0,trainDays=0;
-    days.forEach(function(e){totEx+=e.totalEx||0;dEx+=e.doneEx||0;totM+=e.totalMeals||0;dM+=e.doneMeals||0;if(e.agua)agua++;if(e.creatina)creat++;if(e.doneEx>0)trainDays++;});
+    var totEx=0,dEx=0,totM=0,dM=0,agua=0,creat=0,trainDays=0,treinoMinTot=0;
+    days.forEach(function(e){totEx+=e.totalEx||0;dEx+=e.doneEx||0;totM+=e.totalMeals||0;dM+=e.doneMeals||0;if(e.agua)agua++;if(e.creatina)creat++;if(e.doneEx>0)trainDays++;treinoMinTot+=e.treinoDuracaoMin||0;});
     var pctEx=totEx?Math.round(dEx/totEx*100):0;
     html+='<div class="card card-p" style="border-color:'+(isCur?"var(--gb)":"var(--border)")+'">';
-    html+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px"><div><div style="font-family:var(--ff);font-size:16px;font-weight:800;color:'+(isCur?"var(--green)":"#fff")+'">'+getLabel(k)+(isCur?" · Atual":"")+'</div><div style="font-size:13px;color:var(--muted);margin-top:2px">'+trainDays+' dias treinados</div></div>';
+    html+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px"><div><div style="font-family:var(--ff);font-size:16px;font-weight:800;color:'+(isCur?"var(--green)":"#fff")+'">'+getLabel(k)+(isCur?" · Atual":"")+'</div><div style="font-size:13px;color:var(--muted);margin-top:2px">'+trainDays+' dias treinados'+(treinoMinTot?' · '+treinoMinTot+' min':'')+'</div></div>';
     html+='<div style="font-family:var(--ff);font-size:26px;font-weight:900;color:'+(pctEx>=80?"var(--green)":pctEx>=50?"var(--yellow)":"var(--orange)")+'">'+pctEx+'%</div></div>';
     html+='<div style="display:flex;flex-direction:column;gap:6px">';
     [["💪 Exercícios",dEx,totEx,"#ff6535"],["🍽️ Refeições",dM,totM,"var(--green)"],["💧 Água",agua,days.length,"var(--blue)"],["💊 Creatina",creat,days.length,"var(--pink)"]].forEach(function(b){
