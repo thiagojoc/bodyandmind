@@ -1337,7 +1337,7 @@ function showRunDetail(runId){
     "<div style='background:var(--card);border-radius:10px;padding:12px'><div style='font-family:var(--ff);font-size:24px;font-weight:900;color:#fff'>"+fmt2(Math.floor(r.secs/60))+":"+fmt2(r.secs%60)+"</div><div style='font-size:13px;color:var(--muted);margin-top:3px'>tempo</div></div>"+
     "<div style='background:var(--card);border-radius:10px;padding:12px'><div style='font-family:var(--ff);font-size:24px;font-weight:900;color:#fff'>"+r.pace+"</div><div style='font-size:13px;color:var(--muted);margin-top:3px'>pace/km</div></div>"+
     "<div style='background:var(--card);border-radius:10px;padding:12px'><div style='font-family:var(--ff);font-size:24px;font-weight:900;color:var(--orange)'>"+r.cal+"</div><div style='font-size:13px;color:var(--muted);margin-top:3px'>kcal</div></div>";
-  document.getElementById("rdm-times").textContent=r.date+(r.startTime?" · Início "+r.startTime:"")+" · Fim "+r.time;
+  document.getElementById("rdm-times").textContent=r.date+(r.startTime?" · Início "+r.startTime:"")+(r.time?" · Fim "+r.time:"");
   var media=_getRunMedia()[r.id];
   document.getElementById("rdm-media").innerHTML=media?(media.type==="video"?'<video src="'+media.src+'" controls style="width:100%;max-height:220px;border-radius:12px;margin-bottom:14px"></video>':'<img src="'+media.src+'" style="width:100%;max-height:220px;object-fit:cover;border-radius:12px;margin-bottom:14px"/>'):"";
   document.getElementById("rdm-note").textContent=r.note||"";
