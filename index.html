@@ -720,6 +720,64 @@ document.addEventListener("visibilitychange",function(){
   if(runActive&&document.visibilityState==="visible"&&_wakeLock===null)_requestWakeLock();
 });
 
+// ── SESSÃO DE CORRIDA/CAMINHADA (sobrevive a reload) ────────────────────────
+// Com a tela bloqueada por alguns minutos, o navegador do celular descarta a
+// aba pra economizar memória e recarrega do zero quando ela volta pra frente.
+// Sem isso, runCoords/runDist/runStartTime (só em memória) somem e o app
+// parece "reiniciar", perdendo a caminhada em andamento. Salvando o estado a
+// cada ponto de GPS e a cada pausa/retomada, dá pra retomar a contagem do
+// ponto onde parou assim que o usuário volta pro app.
+function _runSessionKey(){return "ft4"+_pfx()+"_runsession";}
+function _saveRunSession(){
+  try{
+    localStorage.setItem(_runSessionKey(),JSON.stringify({
+      activityType:runActivityType,startTime:runStartTime,pausedTime:runPausedTime,
+      paused:runPaused,coords:runCoords,dist:runDist
+    }));
+  }catch(e){}
+}
+function _clearRunSession(){try{localStorage.removeItem(_runSessionKey());}catch(e){}}
+function _loadRunSession(){try{var s=localStorage.getItem(_runSessionKey());return s?JSON.parse(s):null;}catch(e){return null;}}
+function _resumeRunSession(){
+  var s=_loadRunSession();
+  if(!s||!s.startTime||!runMap)return;
+  runActivityType=s.activityType||"corrida";
+  runStartTime=s.startTime;runPausedTime=s.pausedTime||0;runPaused=!!s.paused;
+  runCoords=s.coords||[];runDist=s.dist||0;
+  runActive=true;runPauseStart=runPaused?Date.now():null;
+  _requestWakeLock();
+  var at=_actType(runActivityType);
+  var typeBadge=document.getElementById("run-type-badge");if(typeBadge)typeBadge.innerHTML=at.icon+" "+at.label;
+  var screen=document.getElementById("run-screen");
+  screen.style.visibility="visible";screen.style.pointerEvents="auto";
+  var nav=document.querySelector('.nav');if(nav)nav.style.display='none';
+  var btn=document.getElementById("run-pause-btn"),banner=document.getElementById("run-pause-banner");
+  if(runPaused){btn.textContent="▶ Continuar";btn.style.background="var(--green)";btn.style.color="#000";banner.style.display="block";}
+  else{btn.textContent="⏸ Pausar";btn.style.background="#ffffff15";btn.style.color="#fff";banner.style.display="none";}
+  if(runRouteLine)runRouteLine.setLatLngs(runCoords);
+  if(runShadowLine)runShadowLine.setLatLngs(runCoords);
+  if(runCoords.length>0){
+    var last=runCoords[runCoords.length-1];
+    var ui=L.divIcon({html:'<div style="width:20px;height:20px;border-radius:50%;background:#00e676;border:3px solid #fff;box-shadow:0 0 0 5px #00e67640"></div>',iconSize:[20,20],iconAnchor:[10,10],className:""});
+    runMarker=L.marker(last,{icon:ui}).addTo(runMap);
+    runMap.setView(last,18);
+  }
+  document.getElementById("run-gps-dot").style.background="#00e676";
+  document.getElementById("run-gps-txt").style.color="#00e676";
+  document.getElementById("run-gps-txt").textContent="GPS ativo";
+  document.getElementById("run-pts").textContent=runCoords.length;
+  document.getElementById("run-cal").textContent=Math.round(runDist*at.calKm);
+  setTimeout(function(){runMap.invalidateSize({animate:false});},50);
+  clearInterval(runTimerInt);runTimerInt=setInterval(updateRunHUD,1000);updateRunHUD();
+  if(navigator.geolocation){
+    runWatchId=navigator.geolocation.watchPosition(function(p){
+      if(runPaused)return;
+      var la=p.coords.latitude,lo=p.coords.longitude,spd=p.coords.speed?Math.round(p.coords.speed*3.6):0;
+      if(runCoords.length>0){var prev=runCoords[runCoords.length-1];var dist=haversine(prev[0],prev[1],la,lo);if(dist>0.005){runDist+=dist;runCoords.push([la,lo]);runRouteLine.setLatLngs(runCoords);runShadowLine.setLatLngs(runCoords);runMarker.setLatLng([la,lo]);runMap.panTo([la,lo]);document.getElementById("run-spd").textContent=spd;document.getElementById("run-pts").textContent=runCoords.length;document.getElementById("run-cal").textContent=Math.round(runDist*_actType(runActivityType).calKm);_saveRunSession();}}
+    },null,{enableHighAccuracy:true,maximumAge:0,timeout:5000});
+  }
+}
+
 // ── HELPERS ───────────────────────────────────────────────────────────────────
 function todayKey(){return new Date().toISOString().split("T")[0];}
 function dow(){return new Date().getDay();}
@@ -1170,6 +1228,7 @@ function startRun(type){
     },50);
   }
   runCoords=[];runDist=0;runStartTime=Date.now();runPausedTime=0;runPaused=false;
+  _saveRunSession();
   clearInterval(runTimerInt);
   runTimerInt=setInterval(updateRunHUD,1000);
   if(runRouteLine)runRouteLine.setLatLngs([]);
@@ -1191,10 +1250,11 @@ function startRun(type){
     document.getElementById("run-gps-dot").style.background="#00e676";
     document.getElementById("run-gps-txt").style.color="#00e676";
     document.getElementById("run-gps-txt").textContent="GPS ativo";
+    _saveRunSession();
     runWatchId=navigator.geolocation.watchPosition(function(p){
       if(runPaused)return;
       var la=p.coords.latitude,lo=p.coords.longitude,spd=p.coords.speed?Math.round(p.coords.speed*3.6):0;
-      if(runCoords.length>0){var prev=runCoords[runCoords.length-1];var dist=haversine(prev[0],prev[1],la,lo);if(dist>0.005){runDist+=dist;runCoords.push([la,lo]);runRouteLine.setLatLngs(runCoords);runShadowLine.setLatLngs(runCoords);runMarker.setLatLng([la,lo]);runMap.panTo([la,lo]);document.getElementById("run-spd").textContent=spd;document.getElementById("run-pts").textContent=runCoords.length;document.getElementById("run-cal").textContent=Math.round(runDist*_actType(runActivityType).calKm);}}
+      if(runCoords.length>0){var prev=runCoords[runCoords.length-1];var dist=haversine(prev[0],prev[1],la,lo);if(dist>0.005){runDist+=dist;runCoords.push([la,lo]);runRouteLine.setLatLngs(runCoords);runShadowLine.setLatLngs(runCoords);runMarker.setLatLng([la,lo]);runMap.panTo([la,lo]);document.getElementById("run-spd").textContent=spd;document.getElementById("run-pts").textContent=runCoords.length;document.getElementById("run-cal").textContent=Math.round(runDist*_actType(runActivityType).calKm);_saveRunSession();}}
     },null,{enableHighAccuracy:true,maximumAge:0,timeout:5000});
   },function(){
     runMap.setView([-10.1258,-36.1758],16);
@@ -1217,16 +1277,19 @@ function toggleRunPause(){
   var btn=document.getElementById("run-pause-btn"),banner=document.getElementById("run-pause-banner");
   if(runPaused){runPauseStart=Date.now();btn.textContent="▶ Continuar";btn.style.background="var(--green)";btn.style.color="#000";banner.style.display="block";if(runRouteLine)runRouteLine.setStyle({opacity:.4});}
   else{runPausedTime+=Date.now()-runPauseStart;btn.textContent="⏸ Pausar";btn.style.background="#ffffff15";btn.style.color="#fff";banner.style.display="none";if(runRouteLine)runRouteLine.setStyle({opacity:.95});}
+  _saveRunSession();
 }
 function finishRun(){var rs=document.getElementById("run-screen");rs.style.visibility="hidden";rs.style.pointerEvents="none";var nav=document.querySelector('.nav');if(nav)nav.style.display='';
   runActive=false;_releaseWakeLock();
   clearInterval(runTimerInt);if(runWatchId)navigator.geolocation.clearWatch(runWatchId);
+  _clearRunSession();
   var el=Math.floor((Date.now()-runStartTime-runPausedTime)/1000);
   runSummaryCoords=runCoords.slice();showRunSummary(runDist,el);
 }
 function closeRunScreen(){
   runActive=false;_releaseWakeLock();
   clearInterval(runTimerInt);if(runWatchId)navigator.geolocation.clearWatch(runWatchId);
+  _clearRunSession();
   var rs=document.getElementById("run-screen");rs.style.visibility="hidden";rs.style.pointerEvents="none";var nav=document.querySelector('.nav');if(nav)nav.style.display='';
 }
 var _routeMapInstances={};
@@ -2387,6 +2450,10 @@ function enterApp(){
         runShadowLine=L.polyline([],{color:"#000",weight:8,opacity:.35,lineCap:"round",lineJoin:"round"}).addTo(runMap);
         runRouteLine=L.polyline([],{color:"#00e676",weight:5,opacity:.95,lineCap:"round",lineJoin:"round"}).addTo(runMap);
       }
+      // Se o app foi recarregado com uma caminhada/corrida em andamento
+      // (tela bloqueada por alguns minutos e o navegador descartou a aba),
+      // retoma a contagem do ponto onde parou em vez de perder tudo.
+      _resumeRunSession();
     },500);
   });
 }
